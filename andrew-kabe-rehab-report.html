@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rehab Recommendations &amp; Strategy Report — 1733 Sara Ct SE, Conyers, GA 30013 (Andrew &amp; Kabe)</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f2544'/%3E%3Ctext x='16' y='22' font-family='sans-serif' font-size='15' font-weight='bold' text-anchor='middle' fill='white'%3E3D%3C/text%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --navy: #0f2544;
+      --blue: #1d4ed8;
+      --sky: #0284c7;
+      --slate: #334155;
+      --muted: #64748b;
+      --border: #cbd5e1;
+      --bg-soft: #f8fafc;
+      --green: #047857;
+      --green-bg: #ecfdf5;
+      --amber: #b45309;
+      --amber-bg: #fffbeb;
+      --red: #b91c1c;
+      --red-bg: #fef2f2;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      color: #0f172a;
+      background: #e2e8f0;
+      line-height: 1.48;
+      font-size: 13.5px;
+    }
+
+    /* Screen Action Toolbar (hidden on print/PDF) */
+    .screen-bar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: #090d16;
+      color: #f8fafc;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+      flex-wrap: wrap;
+    }
+    .screen-bar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 13px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      background: #1e293b;
+      color: #f8fafc;
+    }
+    .nav-btn.primary { background: #0ea5e9; border-color: #0ea5e9; color: #082f49; }
+    .nav-btn.emerald { background: #10b981; border-color: #10b981; color: #022c22; }
+    .nav-btn:hover { filter: brightness(1.08); }
+
+    /* Report Sheet */
+    .page-sheet {
+      max-width: 960px;
+      margin: 24px auto 40px;
+      background: #ffffff;
+      box-shadow: 0 12px 36px rgba(15, 23, 42, 0.14);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    /* Header Banner */
+    .report-hero {
+      background: linear-gradient(135deg, #0b1b34 0%, #17365c 100%);
+      color: #ffffff;
+      padding: 28px 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 20px;
+      border-bottom: 4px solid #38bdf8;
+    }
+    .eyebrow {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #7dd3fc;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .report-hero h1 {
+      font-size: 24px;
+      font-weight: 800;
+      line-height: 1.18;
+      margin-bottom: 6px;
+    }
+    .hero-sub {
+      color: #cbd5e1;
+      font-size: 13px;
+    }
+    .broker-box {
+      text-align: right;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(125, 211, 252, 0.25);
+      border-radius: 8px;
+      padding: 10px 14px;
+      min-width: 245px;
+      font-size: 12px;
+    }
+    .broker-box strong { display: block; font-size: 13px; color: #ffffff; }
+    .broker-box span { color: #cbd5e1; display: block; }
+
+    .content { padding: 26px 36px 34px; }
+
+    /* KPI Strip */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .kpi-card {
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 11px 13px;
+    }
+    .kpi-label {
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .kpi-val {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--navy);
+      margin-top: 3px;
+    }
+    .kpi-note { font-size: 11px; color: var(--slate); margin-top: 2px; }
+
+    h2 {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--navy);
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 5px;
+      margin: 22px 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      break-after: avoid;
+      page-break-after: avoid;
+    }
+
+    /* Executive Strategy Box */
+    .strategy-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-left: 5px solid var(--blue);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+    }
+    .strategy-box h3 { font-size: 14px; color: #1e3a8a; margin-bottom: 6px; }
+    .strategy-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 10px;
+    }
+    .mini-box {
+      background: #ffffff;
+      border: 1px solid #dbeafe;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 12.5px;
+    }
+    .mini-box > strong:first-child { color: var(--navy); display: block; margin-bottom: 4px; }
+
+    /* Room-by-Room Cards */
+    .scope-section {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 14px;
+      overflow: hidden;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .scope-head {
+      background: #f1f5f9;
+      padding: 9px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .scope-head strong { font-size: 13.5px; color: var(--navy); }
+    .cost-pill {
+      background: #0f2544;
+      color: #ffffff;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 999px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1.35fr;
+    }
+    .col-salvage {
+      padding: 11px 14px;
+      background: var(--green-bg);
+      border-right: 1px solid var(--border);
+    }
+    .col-replace {
+      padding: 11px 14px;
+      background: #ffffff;
+    }
+    .col-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+    .tag-keep { background: #a7f3d0; color: #064e3b; }
+    .tag-new { background: #fef3c7; color: #78350f; }
+
+    ul.clean { padding-left: 16px; font-size: 12.4px; }
+    ul.clean li { margin-bottom: 4px; color: #1e293b; }
+    ul.clean li strong { color: #0f172a; }
+
+    /* Blind Spots Section */
+    .blindspot-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 10px;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .blind-card {
+      background: var(--red-bg);
+      border: 1px solid #fecaca;
+      border-top: 4px solid var(--red);
+      border-radius: 8px;
+      padding: 12px 13px;
+      font-size: 12.3px;
+    }
+    .blind-card h4 { font-size: 13px; color: #991b1b; margin-bottom: 5px; }
+
+    /* Budget Summary Table */
+    table.budget-tbl {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 12.3px;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    table.budget-tbl th, table.budget-tbl td {
+      border: 1px solid var(--border);
+      padding: 7px 10px;
+      text-align: left;
+    }
+    table.budget-tbl th { background: var(--navy); color: #ffffff; font-weight: 700; }
+    table.budget-tbl tr:nth-child(even) td { background: #f8fafc; }
+    table.budget-tbl tfoot td {
+      background: #ecfdf5;
+      font-weight: 800;
+      font-size: 13px;
+      color: #064e3b;
+    }
+    .num { text-align: right; white-space: nowrap; }
+
+    .report-footer {
+      margin-top: 20px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .page-break { break-before: page; page-break-before: always; }
+
+    @media print {
+      @page { size: letter; margin: 0.3in; }
+      body { background: #ffffff; font-size: 10px; line-height: 1.34; }
+      .screen-bar { display: none !important; }
+      .page-sheet { max-width: 100%; margin: 0; box-shadow: none; border-radius: 0; }
+      .report-hero { padding: 12px 18px; }
+      .report-hero h1 { font-size: 19px; }
+      .content { padding: 12px 18px 14px; }
+      .kpi-grid { gap: 8px; margin-bottom: 10px; }
+      .kpi-card { padding: 7px 9px; }
+      .kpi-val { font-size: 15px; }
+      .strategy-box { padding: 10px 12px; margin-bottom: 10px; }
+      h2 { margin: 12px 0 7px; font-size: 13.5px; break-after: avoid; page-break-after: avoid; }
+      .scope-section { margin-bottom: 8px; }
+      .scope-head { padding: 6px 11px; }
+      .scope-head strong { font-size: 11.5px; }
+      .cost-pill { font-size: 10px; padding: 2px 8px; }
+      .col-salvage, .col-replace { padding: 7px 10px; }
+      ul.clean { font-size: 10.2px; }
+      ul.clean li { margin-bottom: 2px; }
+      .blind-card { padding: 8px 10px; font-size: 10px; }
+      table.budget-tbl { font-size: 10px; }
+      table.budget-tbl th, table.budget-tbl td { padding: 4px 7px; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+
+    @media screen and (max-width: 780px) {
+      .kpi-grid, .strategy-cols, .two-col, .blindspot-grid { grid-template-columns: 1fr; }
+      .report-hero { flex-direction: column; align-items: flex-start; }
+      .broker-box { text-align: left; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="screen-bar">
+    <div>
+      <strong>1733 Sara Ct SE, Conyers, GA 30013</strong>
+      <span style="color:#94a3b8; margin-left:8px;">Seller Rehab Recommendations &amp; Appraisal GLA Strategy (Andrew &amp; Kabe)</span>
+    </div>
+    <div class="screen-bar-actions">
+      <button onclick="window.print()" class="nav-btn primary">🖨️ Print / Save PDF</button>
+      <a href="1733-Sara-Ct-SE-Rehab-Recommendations-Andrew-Kabe.pdf" class="nav-btn" target="_blank" rel="noopener">📄 Open Generated PDF</a>
+      <a href="3D-rehab-1733-Sara-Ct-Conyers.html" class="nav-btn">🏠 3D Rehab Command Center</a>
+      <a href="3D-buyer-tour-1733-Sara-Ct-Conyers.html" class="nav-btn emerald">🏡 3D Buyer Tour</a>
+    </div>
+  </div>
+
+  <div class="page-sheet">
+    <header class="report-hero">
+      <div>
+        <div class="eyebrow">Broker Rehab Advisory &amp; Pre-Listing Value Strategy</div>
+        <h1>1733 Sara Ct SE, Conyers, GA 30013</h1>
+        <div class="hero-sub">Prepared exclusively for Seller Clients: <strong>Andrew &amp; Kabe</strong> • Magicplan Total: 2,833 sq ft | Target Heated/Cooled Living: 2,086 sq ft</div>
+      </div>
+      <div class="broker-box">
+        <strong>Tony Tran</strong>
+        <span>Georgia Real Estate Consultant</span>
+        <span>The NXT Team - Simply Homes ATL</span>
+        <span>678-900-8363 • tonyt.nxt@gmail.com</span>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Total Heated / Cooled Target</div>
+          <div class="kpi-val">2,086 sq ft</div>
+          <div class="kpi-note">1,381 sf Main/Up + 705 sf Lower Suite</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Recommended Budget Range</div>
+          <div class="kpi-val">$39.5K – $71.0K</div>
+          <div class="kpi-note">Lean high-ROI salvage + upgrades</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Appraisal GLA Unlock</div>
+          <div class="kpi-val">705 sq ft</div>
+          <div class="kpi-note">Mini-Split + Conforming Closet + Kitchenette</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Critical Pre-List Checks</div>
+          <div class="kpi-val">3 Blind Spots</div>
+          <div class="kpi-note">Sewer vs Septic • Panel/GFCI • Moisture</div>
+        </div>
+      </div>
+
+      <h2>1. Executive Summary &amp; Appraisal GLA Strategy</h2>
+      <div class="strategy-box">
+        <h3>Why Conditioning All 2,086 Sq Ft &amp; Converting the Lower Level Into a Conforming In-Law Suite Maximizes Net Proceeds</h3>
+        <p>
+          Currently, <strong>1733 Sara Ct SE has zero active central HVAC</strong> and relies on fake wall vents in the 705 sq ft Garage Conversion. Leaving the lower level unconditioned saves a modest $2.6K–$4.5K upfront, <strong>but risks appraisers assigning near-zero contributory GLA value</strong> to those 705 sq ft—while creating buyer inspection objections when registers blow no air.
+        </p>
+        <div class="strategy-cols">
+          <div class="mini-box">
+            <strong>A. Half-House Central HVAC + Ductless Heat-Pump Mini-Split</strong>
+            Install a <strong>Half-House Central Heat Pump</strong> for the Main Floor &amp; Upstairs (~1,381 sq ft) where ductwork is straightforward, and pair it with a dedicated <strong>Ductless Heat-Pump Mini-Split</strong> (plus exterior condenser) in the 705 sq ft Garage Conversion. Every room is genuinely heated and cooled for appraisal credit without costly basement soffit ducting.
+          </div>
+          <div class="mini-box">
+            <strong>B. High-Value In-Law / Income Suite Transformation</strong>
+            Per Magicplan Page 26 (driveway orientation), knock down the interior wall between the Front-Right driveway-entry room (106 sf, #10) and Living Room (293 sf, #12) to create an <strong>open Kitchenette</strong>, and frame a <strong>closet</strong> in the Front-Left room (139 sf, #11) so it legally markets and appraises as a true conforming bedroom.
+          </div>
+        </div>
+      </div>
+
+      <h2>2. Complete Room-by-Room Rehab Scope (Salvage vs. Replace)</h2>
+
+      <!-- Main Floor -->
+      <div class="scope-section">
+        <div class="scope-head">
+          <strong>Main Floor — Living Room (271 sf), Dining Room (121 sf), Kitchen (115 sf) &amp; Rear Deck (208 sf)</strong>
+          <span class="cost-pill">Kitchen + Paint/LVP/Lights + Laundry: ~$13,800 – $23,500</span>
+        </div>
+        <div class="two-col">
+          <div class="col-salvage">
+            <span class="col-tag tag-keep">Salvage / Keep</span>
+            <ul class="clean">
+              <li><strong>Kitchen Layout:</strong> Keep exact plumbing &amp; electrical layout (saves $4K+ in rough-in moves).</li>
+              <li><strong>Appliances:</strong> Salvage matching <strong>stainless steel electric range cooktop &amp; microwave</strong> (verify operation).</li>
+              <li><strong>Main Living Floor &amp; Fan:</strong> Keep good existing Living Room LVP and ceiling fan.</li>
+              <li><strong>Rear Deck Structure:</strong> Salvage framing &amp; stairs after ledger/joist safety check.</li>
+            </ul>
+          </div>
+          <div class="col-replace">
+            <span class="col-tag tag-new">Replace / Upgrade</span>
+            <ul class="clean">
+              <li><strong>Kitchen:</strong> Install <strong>all brand-new white shaker cabinets</strong>, <strong>brand-new granite countertops</strong>, <strong>1 large single-bowl deep-dish sink</strong> w/ modern gooseneck faucet, <strong>GFCI outlets</strong> near water, <strong>new SS refrigerator</strong>, and new LVP over tile.</li>
+              <li><strong>Dining Room:</strong> Lay new LVP over tile, full interior paint, and <strong>replace light fixtures with modern fixtures</strong>.</li>
+              <li><strong>Living Room &amp; Entry Laundry:</strong> <strong>Delete/remove window curtain rods &amp; draperies</strong> on front window; close open drywall/exposed PVC at right-side entry laundry area, add <strong>GFCI protection</strong>, verify washer/dryer code.</li>
+              <li><strong>Full Interior Paint &amp; Deck:</strong> Paint all walls, trim &amp; ceilings; pressure wash &amp; stain Rear Deck.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upstairs -->
+      <div class="scope-section">
+        <div class="scope-head">
+          <strong>Upstairs — Primary Suite (225 sf + 69 sf Bath), Hall Bath (42 sf) &amp; Bedrooms 2 &amp; 3 (111 sf &amp; 125 sf)</strong>
+          <span class="cost-pill">Primary + Hall Bath + Closet + Fans: ~$6,600 – $12,400</span>
+        </div>
+        <div class="two-col">
+          <div class="col-salvage">
+            <span class="col-tag tag-keep">Salvage / Keep</span>
+            <ul class="clean">
+              <li><strong>Primary 6-Drawer Double Vanity:</strong> Salvage sturdy cabinet base &amp; double top (touch up nicks/dings).</li>
+              <li><strong>Toilets &amp; Hall Shower Tile:</strong> Salvage toilets in both baths; salvage existing Hall Bath shower tiles (deep clean, reseal &amp; recaulk).</li>
+              <li><strong>Primary Bath Window:</strong> Keep right-hand rear window intact during shower expansion.</li>
+              <li><strong>Bedroom Flooring:</strong> Keep existing LVP across Primary &amp; secondary bedrooms.</li>
+            </ul>
+          </div>
+          <div class="col-replace">
+            <span class="col-tag tag-new">Replace / Upgrade</span>
+            <ul class="clean">
+              <li><strong>Primary Bath:</strong> Replace <strong>all vanity hardware (incl. missing top-left drawer pull)</strong>, install large/double <strong>mirror</strong> + <strong>GFCI outlet</strong>, delete curtain rod, <strong>extend shower toward intact right window</strong> w/ new ceramic tile + <strong>swinging glass enclosure</strong>, replace pebble pan w/ modern ceramic tile.</li>
+              <li><strong>Primary &amp; Secondary Bedrooms:</strong> Frame <strong>dedicated closed reach-in closet</strong> in Primary Bedroom (logical bed/nightstand/TV layout); <strong>replace mismatching ceiling fans</strong> in Beds 2 &amp; 3 with matching modern fans.</li>
+              <li><strong>Shared Hall Bath:</strong> Install <strong>glass sliding shower door</strong> on salvaged shower, install <strong>new vanity</strong> over exposed plumbing, add <strong>GFCI outlet</strong>.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Garage Conversion In-Law Suite -->
+      <div class="scope-section">
+        <div class="scope-head">
+          <strong>Lower Level / Garage Conversion In-Law Suite (705 sf — Corrected Magicplan Page 26 Orientation)</strong>
+          <span class="cost-pill">Mini-Split + Kitchenette + Closet + Bath: ~$9,300 – $17,400</span>
+        </div>
+        <div class="two-col">
+          <div class="col-salvage">
+            <span class="col-tag tag-keep">Salvage / Keep</span>
+            <ul class="clean">
+              <li><strong>Front-Left (#11, 139 sf) &amp; Front-Right (#10, 106 sf):</strong> Keep good existing LVP, front window, and exterior driveway entry door.</li>
+              <li><strong>Living Room (#12, 293 sf):</strong> Keep backyard exterior door, 4–5 recessed lights + ceiling fan, and washer connection / dryer electrical outlet (verify code).</li>
+              <li><strong>Lower Bath (#9, 58 sf):</strong> Salvage toilet and shower tiles (deep clean, recaulk, reseal).</li>
+            </ul>
+          </div>
+          <div class="col-replace">
+            <span class="col-tag tag-new">Replace / Upgrade</span>
+            <ul class="clean">
+              <li><strong>Open Kitchenette (#10):</strong> Knock down interior wall between Front-Right &amp; Living Room to build open Kitchenette (cabinets, counter, sink, fridge/appliance nook, GFCI).</li>
+              <li><strong>Conforming Bedroom (#11):</strong> Frame a <strong>closet system</strong> inside Front-Left bedroom next to stairs.</li>
+              <li><strong>Living &amp; Mini-Split (#12):</strong> Lay <strong>new LVP</strong> over raw/tiled floor, remove fake vents, close stairwell breaker panel + patch drywall, install <strong>Ductless Heat-Pump Mini-Split</strong> + exterior condenser.</li>
+              <li><strong>Lower Bath (#9):</strong> Box in exposed cast-iron &amp; PVC pipes behind toilet, delete curtain rod, add <strong>glass shower enclosure + new vanity + GFCI</strong>.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Crawl Space & Exterior -->
+      <div class="scope-section">
+        <div class="scope-head">
+          <strong>Crawl Space (468 sf, Rear Door &amp; Water Heater) + Exterior Fit &amp; Finish (Photos 1–17)</strong>
+          <span class="cost-pill">Crawl + Exterior + HVAC: ~$8,900 – $15,700</span>
+        </div>
+        <div class="two-col">
+          <div class="col-salvage">
+            <span class="col-tag tag-keep">Salvage / Keep</span>
+            <ul class="clean">
+              <li><strong>Water Heater &amp; Foundation:</strong> Salvage electric water heater next to rear (-Z) crawl door; keep dark blue board-and-batten siding, stacked stone veneer, white windows &amp; stone entry steps.</li>
+              <li><strong>Site Features:</strong> Salvage side wood fence gate &amp; front timber landscape edging.</li>
+              <li><strong>Lean Crawl Insulation Choice:</strong> Do <strong>NOT</strong> install expensive new subfloor insulation (keep budget lean).</li>
+            </ul>
+          </div>
+          <div class="col-replace">
+            <span class="col-tag tag-new">Replace / Upgrade</span>
+            <ul class="clean">
+              <li><strong>Crawl Space:</strong> Remove/discard ~10% falling fiberglass insulation + all wood, drywall &amp; trash debris; lay clean optional vapor barrier; <strong>check for water stains / moisture intrusion before listing</strong>.</li>
+              <li><strong>Exterior Rehab:</strong> Pressure wash siding/stone/deck; blue touch-up paint on select white trim; trim overhanging right-rear branches above roof; re-nail rear gutters; <strong>replace wooden trough &amp; purple bucket with proper downspout drainage extension</strong>; patch black cinderblock hole, hairline cracks &amp; rusted crawl vent; set Central + Mini-Split condensers.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <h2>3. Critical Pre-Listing Blind Spots to Verify</h2>
+      <div class="blindspot-grid">
+        <div class="blind-card">
+          <h4>(a) Public Sewer vs. Septic Verification</h4>
+          Property is believed to be on public sewer, <strong>but must be verified with Rockdale Water Resources / county records before listing</strong>. In Georgia, septic tank sizing legally restricts advertised bedroom count and In-Law Suite occupancy; confirming public sewer protects marketing claims for 4 conforming bedrooms + In-Law Kitchenette.
+        </div>
+        <div class="blind-card">
+          <h4>(b) Breaker Panel, Amperage &amp; GFCI Code</h4>
+          Close the open stairwell electrical breaker panel with a proper dead-front cover + labeled directory and patch cut drywall. <strong>Have a licensed electrician verify total main panel amperage capacity</strong> for the Half-House Central HVAC, Mini-Split, Kitchenette &amp; dual laundry hookups—and upgrade <strong>all</strong> water-adjacent outlets to GFCI.
+        </div>
+        <div class="blind-card">
+          <h4>(c) Crawl Moisture &amp; Downspout Drainage</h4>
+          Once falling fiberglass insulation and wood/drywall/trash debris are cleared from the 468 sf crawl space, inspect floor joists, subfloor, and black CMU walls for any <strong>water stains or moisture intrusion</strong> before listing. Eliminate the corner downspout wooden trough &amp; purple bucket with a rigid/corrugated extension discharging water away from the foundation.
+        </div>
+      </div>
+
+      <h2>4. Itemized Rehab Budget Summary</h2>
+      <table class="budget-tbl">
+        <thead>
+          <tr>
+            <th>Scope Item</th>
+            <th>Level / Area</th>
+            <th>Priority</th>
+            <th class="num">Low Est.</th>
+            <th class="num">High Est.</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Half-House Central Heat Pump HVAC + Ductwork</td><td>Main &amp; Upstairs</td><td>Must-Do / GLA</td><td class="num">$6,500</td><td class="num">$10,500</td></tr>
+          <tr><td>Garage Conv. Ductless Heat-Pump Mini-Split + Condenser</td><td>In-Law Suite (705 sf)</td><td>Must-Do / GLA</td><td class="num">$2,600</td><td class="num">$4,500</td></tr>
+          <tr><td>In-Law Conversion: Open Kitchenette Wall Demo + Bed Closet</td><td>Garage Conv. #10 &amp; #11</td><td>Value-Add</td><td class="num">$4,500</td><td class="num">$8,500</td></tr>
+          <tr><td>Main Kitchen: White Shaker, Granite, Deep Sink &amp; SS Fridge</td><td>Main Floor (Same Layout)</td><td>Value-Add</td><td class="num">$6,800</td><td class="num">$11,500</td></tr>
+          <tr><td>Full Interior Paint, LVP Over Tile, Modern Dining Lights &amp; Curtains</td><td>Main + Lower Living</td><td>Must-Do</td><td class="num">$6,500</td><td class="num">$10,800</td></tr>
+          <tr><td>Primary Suite: Extended Ceramic Shower/Glass, Hardware, Mirror &amp; Closet</td><td>Upstairs Primary</td><td>Value-Add</td><td class="num">$4,200</td><td class="num">$7,800</td></tr>
+          <tr><td>Upstairs Hall Bath (Vanity, Glass Sliding Door, GFCI) + Matching Fans</td><td>Upstairs Hall &amp; Beds 2/3</td><td>Must-Do</td><td class="num">$2,400</td><td class="num">$4,600</td></tr>
+          <tr><td>Lower In-Law Bath: Box Plumbing Lines, Glass Enclosure, Vanity &amp; GFCI</td><td>Garage Conv. #9</td><td>Must-Do</td><td class="num">$2,200</td><td class="num">$4,400</td></tr>
+          <tr><td>Electrical Blind Spots: Breaker Panel/Amperage, GFCI, Laundry Wall &amp; Sewer Check</td><td>Safety / Code</td><td>Must-Do</td><td class="num">$1,400</td><td class="num">$3,200</td></tr>
+          <tr><td>Crawl Space Cleanup/Moisture Check + Exterior Wash, Trim, Tree, Gutters &amp; Downspout</td><td>Crawl &amp; Exterior</td><td>Must-Do</td><td class="num">$2,400</td><td class="num">$5,200</td></tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3">TOTAL ESTIMATED REHAB RANGE (1733 Sara Ct SE — Lean High-ROI Turnkey Scope)</td>
+            <td class="num">$39,500</td>
+            <td class="num">$71,000</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div class="report-footer">
+        <span>Prepared by Tony Tran • Georgia Real Estate Consultant • The NXT Team - Simply Homes ATL • 678-900-8363 • tonyt.nxt@gmail.com</span>
+        <span>Subject to contractor bids &amp; pre-listing inspections • 1733 Sara Ct SE, Conyers, GA 30013</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

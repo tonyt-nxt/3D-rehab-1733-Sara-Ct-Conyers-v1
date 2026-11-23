@@ -1,0 +1,2999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>3D-buyer-tour-1733-Sara-Ct-Conyers — 1733 Sara Ct SE, Conyers, GA 30013</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2310b981'/%3E%3Ctext x='16' y='22' font-family='sans-serif' font-size='15' font-weight='bold' text-anchor='middle' fill='white'%3E3D%3C/text%3E%3C/svg%3E" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --glass: rgba(10, 16, 28, 0.84);
+      --glass-strong: rgba(10, 16, 28, 0.94);
+      --border: rgba(148, 163, 184, 0.22);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --font: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #070b14;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 13px;
+      user-select: none;
+    }
+
+    #canvas-wrap {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    canvas { display: block; width: 100%; height: 100%; }
+
+    /* Top Header Bar */
+    .tour-topbar {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      z-index: 20;
+      pointer-events: none;
+      flex-wrap: wrap;
+    }
+
+    .brand-pill, .action-pill-bar {
+      pointer-events: auto;
+      background: var(--glass);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      max-width: 100%;
+    }
+    .action-pill-bar {
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .logo-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #10b981, #0ea5e9);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 13px;
+      color: #022c22;
+      flex-shrink: 0;
+    }
+
+    .brand-info h1 { font-size: 13.5px; font-weight: 700; line-height: 1.2; }
+    .brand-info p { font-size: 11px; color: var(--muted); }
+
+    .btn {
+      border: 1px solid var(--border);
+      background: rgba(30, 41, 59, 0.85);
+      color: var(--text);
+      padding: 7px 12px;
+      border-radius: 9px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.16s ease;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .btn:hover { border-color: var(--accent); background: rgba(56, 189, 248, 0.16); }
+    .btn.active { background: var(--accent); color: #082f49; border-color: var(--accent); }
+    .btn-tour { background: linear-gradient(135deg, #10b981, #059669); border-color: transparent; color: #fff; }
+    .btn-tour:hover { filter: brightness(1.1); background: linear-gradient(135deg, #10b981, #059669); }
+    .btn-gold { background: linear-gradient(135deg, #f59e0b, #d97706); border-color: transparent; color: #1c1917; font-weight: 700; }
+
+    /* Left Controls Dock */
+    .left-dock {
+      position: fixed;
+      top: 112px;
+      left: 12px;
+      width: 268px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 18;
+      pointer-events: none;
+      max-height: calc(100vh - 175px);
+      overflow-y: auto;
+    }
+
+    .dock-card {
+      pointer-events: auto;
+      background: var(--glass);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+    }
+
+    .dock-title {
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .style-grid, .level-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .choice-btn {
+      width: 100%;
+      text-align: left;
+      padding: 8px 10px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: rgba(30, 41, 59, 0.65);
+      color: var(--text);
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      transition: all 0.15s ease;
+    }
+    .choice-btn:hover { border-color: var(--accent); }
+    .choice-btn.active {
+      border-color: var(--emerald);
+      background: rgba(16, 185, 129, 0.18);
+      font-weight: 700;
+    }
+
+    .swatch-row { display: flex; gap: 3px; flex-shrink: 0; }
+    .swatch { width: 10px; height: 10px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.35); }
+
+    .level-pills {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    /* Time of Day Slider */
+    .tod-readout { font-size: 12px; font-weight: 700; color: #fde68a; }
+    input[type="range"] {
+      width: 100%;
+      accent-color: #f59e0b;
+      margin: 6px 0;
+      cursor: pointer;
+    }
+    .tod-presets {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .tod-pill {
+      border: 1px solid var(--border);
+      background: rgba(30, 41, 59, 0.7);
+      color: var(--muted);
+      padding: 4px 2px;
+      border-radius: 6px;
+      font-size: 10.5px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+    }
+    .tod-pill.active, .tod-pill:hover {
+      color: var(--text);
+      border-color: var(--amber);
+      background: rgba(245, 158, 11, 0.2);
+    }
+
+    /* Guided Tour Floating Showcase Card */
+    .showcase-card {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(130px);
+      width: min(560px, calc(100vw - 28px));
+      background: var(--glass-strong);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(56, 189, 248, 0.38);
+      border-radius: 16px;
+      padding: 15px 18px;
+      z-index: 25;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55);
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .showcase-card.visible {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .showcase-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 5px;
+    }
+    .showcase-step {
+      font-size: 10.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #34d399;
+    }
+    .showcase-sqft {
+      font-size: 11px;
+      font-weight: 700;
+      color: #7dd3fc;
+      background: rgba(56, 189, 248, 0.14);
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+    .showcase-card h3 { font-size: 17px; font-weight: 800; margin-bottom: 4px; }
+    .showcase-card p { font-size: 12.5px; color: #cbd5e1; line-height: 1.45; margin-bottom: 10px; }
+    .showcase-controls { display: flex; gap: 8px; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+
+    /* Bottom Walk Hint */
+    .walk-hint {
+      position: fixed;
+      bottom: 14px;
+      right: 14px;
+      background: var(--glass);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 7px 12px;
+      font-size: 11.5px;
+      color: var(--muted);
+      z-index: 16;
+    }
+    .walk-hint strong { color: var(--text); }
+
+    /* Welcome Screen Overlay */
+    .welcome-overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 50% 35%, rgba(14, 116, 144, 0.28), rgba(7, 11, 20, 0.92));
+      backdrop-filter: blur(10px);
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      transition: opacity 0.35s ease;
+    }
+    .welcome-overlay.hidden { opacity: 0; pointer-events: none; }
+
+    .welcome-modal {
+      max-width: 600px;
+      width: 100%;
+      max-height: 92vh;
+      overflow-y: auto;
+      background: rgba(15, 23, 42, 0.94);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 20px;
+      padding: 26px 28px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+      text-align: center;
+    }
+    .project-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: #7dd3fc;
+      background: rgba(56, 189, 248, 0.14);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 4px 11px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+    }
+    .welcome-modal h2 { font-size: 26px; font-weight: 800; line-height: 1.2; margin-bottom: 6px; }
+    .welcome-address { font-size: 14px; color: #cbd5e1; margin-bottom: 14px; }
+    .arv-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #6ee7b7;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 12.5px;
+      margin-bottom: 18px;
+    }
+    .welcome-features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      text-align: left;
+      margin-bottom: 22px;
+    }
+    .wf-box {
+      background: rgba(30, 41, 59, 0.65);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 10px;
+      font-size: 11.5px;
+      color: #cbd5e1;
+    }
+    .wf-box strong { display: block; color: #fff; font-size: 12px; margin-bottom: 2px; }
+    .welcome-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+    .welcome-btns .btn { padding: 11px 20px; font-size: 13.5px; border-radius: 11px; }
+    .broker-credit { font-size: 11.5px; color: var(--muted); }
+
+    /* Broker Contact Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.78);
+      backdrop-filter: blur(8px);
+      z-index: 45;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .broker-modal {
+      max-width: 440px;
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    }
+    .broker-modal h3 { font-size: 18px; margin-bottom: 4px; }
+    .broker-modal .sub { color: #38bdf8; font-weight: 700; font-size: 12.5px; margin-bottom: 14px; }
+    .broker-card-row {
+      background: rgba(30, 41, 59, 0.65);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 9px;
+      font-size: 12.5px;
+    }
+
+    /* Mobile / Tablet Touch Controls */
+    .touch-controls {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 22;
+      display: none;
+    }
+    .touch-controls.visible { display: block; }
+    .touch-pad {
+      position: absolute;
+      bottom: 22px;
+      width: 116px;
+      height: 116px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.65);
+      border: 2px solid rgba(56, 189, 248, 0.45);
+      pointer-events: auto;
+      touch-action: none;
+      display: grid;
+      place-items: center;
+    }
+    #touch-move-pad { left: 18px; }
+    #touch-look-pad { right: 18px; }
+    .touch-knob {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(56, 189, 248, 0.78);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      pointer-events: none;
+    }
+    .touch-tag {
+      position: absolute;
+      bottom: -18px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #cbd5e1;
+      text-transform: uppercase;
+    }
+
+    .mobile-toggle-dock {
+      display: none;
+    }
+
+    @media (max-width: 820px) {
+      .tour-topbar { top: 8px; left: 8px; right: 8px; gap: 6px; }
+      .brand-pill { width: 100%; padding: 6px 10px; }
+      .action-pill-bar { width: 100%; padding: 6px 8px; gap: 5px; justify-content: flex-start; }
+      .action-pill-bar .btn { padding: 5px 8px; font-size: 11px; }
+      .left-dock {
+        top: auto;
+        bottom: 150px;
+        left: 10px;
+        width: 220px;
+        max-height: 46vh;
+        display: none;
+      }
+      .left-dock.mobile-open { display: flex; }
+      .mobile-toggle-dock { display: inline-flex; }
+      .welcome-modal { padding: 18px 16px; }
+      .welcome-modal h2 { font-size: 21px; }
+      .welcome-features { grid-template-columns: 1fr; }
+      .walk-hint { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="canvas-wrap"></div>
+
+  <!-- Top Header -->
+  <header class="tour-topbar">
+    <div class="brand-pill">
+      <div class="logo-mark">3D</div>
+      <div class="brand-info">
+        <h1>1733 Sara Ct SE, Conyers, GA 30013</h1>
+        <p>Turnkey Post-Rehab Buyer Tour • 2,086 Sq Ft Heated/Cooled + In-Law Suite</p>
+      </div>
+    </div>
+
+    <div class="action-pill-bar">
+      <button id="btn-guided-tour" class="btn btn-tour">▶ Start Guided Tour</button>
+      <button id="btn-roof-dollhouse" class="btn">🏠 Dollhouse (Roof-Off)</button>
+      <button id="btn-walk-mode" class="btn">🚶 GTA Walk (16mm)</button>
+      <button id="btn-cam-view" class="btn" style="display:none;">🎥 3rd-Person GTA</button>
+      <button id="btn-music-toggle" class="btn">🔇 Music Off</button>
+      <button id="btn-touch-toggle" class="btn">📱 Touch Pad</button>
+      <button id="btn-mobile-menu" class="btn mobile-toggle-dock">⚙️ Controls</button>
+      <button id="btn-contact-broker" class="btn btn-gold">📞 Contact Consultant</button>
+    </div>
+  </header>
+
+  <!-- Left Floating Controls Dock -->
+  <aside class="left-dock" id="left-dock">
+    <!-- 3-Style Switcher -->
+    <div class="dock-card">
+      <div class="dock-title"><span>🎨 1-Click Interior Style</span></div>
+      <div class="style-grid" id="style-switcher">
+        <button class="choice-btn active" data-style="scandi">
+          <span>Modern Scandinavian Warm Luxury</span>
+          <span class="swatch-row">
+            <span class="swatch" style="background:#c8a97e"></span>
+            <span class="swatch" style="background:#f4efe6"></span>
+            <span class="swatch" style="background:#18181b"></span>
+          </span>
+        </button>
+        <button class="choice-btn" data-style="transitional">
+          <span>Warm Contemporary Transitional</span>
+          <span class="swatch-row">
+            <span class="swatch" style="background:#5c3d28"></span>
+            <span class="swatch" style="background:#1e3a5f"></span>
+            <span class="swatch" style="background:#c59b43"></span>
+          </span>
+        </button>
+        <button class="choice-btn" data-style="organic">
+          <span>Organic Modern Minimalist</span>
+          <span class="swatch-row">
+            <span class="swatch" style="background:#a6754b"></span>
+            <span class="swatch" style="background:#b45d43"></span>
+            <span class="swatch" style="background:#6f8872"></span>
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Time of Day Slider -->
+    <div class="dock-card">
+      <div class="dock-title">
+        <span>☀️ Time of Day Lighting</span>
+        <span class="tod-readout" id="tod-label">12:00 PM Midday</span>
+      </div>
+      <input type="range" id="tod-slider" min="0" max="100" value="35" />
+      <div class="tod-presets">
+        <button class="tod-pill" data-tod="0">🌅 7 AM</button>
+        <button class="tod-pill active" data-tod="35">☀️ Noon</button>
+        <button class="tod-pill" data-tod="74">🌇 6:30P</button>
+        <button class="tod-pill" data-tod="100">🌙 9:30P</button>
+      </div>
+    </div>
+
+    <!-- Multi-Floor Level Switcher -->
+    <div class="dock-card">
+      <div class="dock-title"><span>🏢 Floor &amp; View Switcher</span></div>
+      <div class="level-pills">
+        <button class="btn active" data-level="all">Full Home</button>
+        <button class="btn" data-level="upstairs">Upstairs (771 sf)</button>
+        <button class="btn" data-level="main">Main &amp; Deck</button>
+        <button class="btn" data-level="garage">In-Law Suite</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Guided Auto-Walk Floating Showcase Card -->
+  <div class="showcase-card" id="showcase-card">
+    <div class="showcase-top">
+      <span class="showcase-step" id="sc-step">Stop 1 of 11</span>
+      <span class="showcase-sqft" id="sc-sqft">2,086 Sq Ft Living</span>
+    </div>
+    <h3 id="sc-title">Welcome to 1733 Sara Ct SE</h3>
+    <p id="sc-desc">Turnkey 4-level renovation featuring a brand-new In-Law Suite with open Kitchenette &amp; Ductless Mini-Split.</p>
+    <div class="showcase-controls">
+      <div style="display:flex; gap:6px;">
+        <button id="sc-prev" class="btn">⏮ Prev</button>
+        <button id="sc-pause" class="btn">⏸ Pause</button>
+        <button id="sc-next" class="btn">Next ⏭</button>
+      </div>
+      <button id="sc-stop" class="btn">✕ Exit Tour</button>
+    </div>
+  </div>
+
+  <!-- Walk Hint -->
+  <div class="walk-hint" id="walk-hint">
+    <strong>Dollhouse Orbit:</strong> Left-drag orbit • Right-drag pan • Scroll zoom • Click <strong>🚶 GTA Walk (16mm)</strong> for 3rd-person walkthrough w/ wall &amp; stair physics
+  </div>
+
+  <!-- On-Screen Touch Controls for Mobile/Tablet -->
+  <div class="touch-controls" id="touch-controls">
+    <div class="touch-pad" id="touch-move-pad">
+      <div class="touch-knob" id="touch-move-knob"></div>
+      <span class="touch-tag">Move</span>
+    </div>
+    <div class="touch-pad" id="touch-look-pad">
+      <div class="touch-knob" id="touch-look-knob"></div>
+      <span class="touch-tag">Look</span>
+    </div>
+  </div>
+
+  <!-- Welcome Overlay -->
+  <div class="welcome-overlay" id="welcome-overlay">
+    <div class="welcome-modal">
+      <div class="project-tag">3D-buyer-tour-1733-Sara-Ct-Conyers</div>
+      <h2>1733 Sara Ct SE</h2>
+      <div class="welcome-address">Conyers, GA 30013 • 4 Levels • 4 Bedrooms • 3 Full Bathrooms</div>
+      <div class="arv-badge">✨ Turnkey Post-Rehab Showcase • 2,086 Sq Ft Heated/Cooled Living + In-Law Suite • Target Listing / ARV Showcase</div>
+      <div class="welcome-features">
+        <div class="wf-box">
+          <strong>🎨 3 Designer Styles</strong>
+          Switch instantly between Scandinavian, Transitional &amp; Organic Modern interiors.
+        </div>
+        <div class="wf-box">
+          <strong>🌅 Sun-to-Night Lighting</strong>
+          Slide from 7 AM morning sun to 6:30 PM golden sunset &amp; glowing night lamps.
+        </div>
+        <div class="wf-box">
+          <strong>🏡 Conforming In-Law Suite</strong>
+          Explore the open driveway-entry Kitchenette, Bedroom Closet &amp; Mini-Split HVAC.
+        </div>
+      </div>
+      <div class="welcome-btns">
+        <button id="welcome-start-tour" class="btn btn-tour">▶ Start Guided Tour (w/ Music)</button>
+        <button id="welcome-explore" class="btn">🚶 GTA 3rd-Person Walk (16mm)</button>
+      </div>
+      <div class="broker-credit">Presented by <strong>Tony Tran</strong> • Georgia Real Estate Consultant • <strong>The NXT Team - Simply Homes ATL</strong> • <strong>678-900-8363</strong> • tonyt.nxt@gmail.com</div>
+    </div>
+  </div>
+
+  <!-- Broker Contact Modal -->
+  <div class="modal-backdrop" id="broker-modal">
+    <div class="broker-modal">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div>
+          <h3>Tony Tran</h3>
+          <div class="sub">Georgia Real Estate Consultant • The NXT Team - Simply Homes ATL</div>
+        </div>
+        <button id="close-broker-modal" class="btn">✕</button>
+      </div>
+      <div class="broker-card-row">
+        <strong>Direct Contact:</strong><br />
+        📞 <a href="tel:678-900-8363" style="color:#38bdf8; font-weight:700; text-decoration:none;">678-900-8363</a> &nbsp;•&nbsp;
+        ✉️ <a href="mailto:tonyt.nxt@gmail.com" style="color:#38bdf8; font-weight:700; text-decoration:none;">tonyt.nxt@gmail.com</a>
+      </div>
+      <div class="broker-card-row">
+        <strong>Featured Property:</strong><br />
+        1733 Sara Ct SE, Conyers, GA 30013<br />
+        <span style="color:var(--muted);">2,833 sq ft Total • 2,086 sq ft Heated/Cooled Living • 4 Bed / 3 Bath + In-Law Suite</span>
+      </div>
+      <div class="broker-card-row">
+        <strong>Private Showing &amp; Financing Inquiries:</strong><br />
+        Contact Tony Tran at 678-900-8363 or tonyt.nxt@gmail.com for full renovation disclosures, In-Law Suite appraisal packet, and private tour scheduling.
+      </div>
+      <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
+        <button id="copy-property-info" class="btn btn-tour" style="flex:1; justify-content:center;">📋 Copy Property &amp; Contact Info</button>
+        <a href="3D-rehab-1733-Sara-Ct-Conyers.html" class="btn">🛠️ Rehab Command Center</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as THREE from "three";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+    // =========================================================================
+    // 1. DESIGNER STYLES PALETTE (3-STYLE 1-CLICK SWITCHER)
+    // =========================================================================
+    const STYLES = {
+      scandi: {
+        name: "Modern Scandinavian Warm Luxury",
+        woodHex: 0xc8a97e,
+        woodDarkHex: 0xa6875e,
+        fabricMainHex: 0xf4efe6,
+        fabricAccentHex: 0xd6cfc2,
+        rugHex: 0xeae4da,
+        metalHex: 0x18181b,
+        stoneHex: 0xf1ede4,
+        wallHex: 0xfafaf9,
+        artHexA: 0x1e293b,
+        artHexB: 0xd6cfc2,
+        lampShadeHex: 0xfffbeb,
+        plantPotHex: 0xf5f5f4,
+        cabinetHex: 0xffffff,
+      },
+      transitional: {
+        name: "Warm Contemporary Transitional",
+        woodHex: 0x5c3d28,
+        woodDarkHex: 0x3e2718,
+        fabricMainHex: 0x334155,
+        fabricAccentHex: 0x1e3a5f,
+        rugHex: 0xcbd5e1,
+        metalHex: 0xc59b43,
+        stoneHex: 0xf8fafc,
+        wallHex: 0xf4f5f7,
+        artHexA: 0x1e3a5f,
+        artHexB: 0xc59b43,
+        lampShadeHex: 0xfef3c7,
+        plantPotHex: 0x1e293b,
+        cabinetHex: 0xf8fafc,
+      },
+      organic: {
+        name: "Organic Modern Minimalist",
+        woodHex: 0xa6754b,
+        woodDarkHex: 0x7c5332,
+        fabricMainHex: 0xdfd5c5,
+        fabricAccentHex: 0xb45d43,
+        rugHex: 0xc2b29b,
+        metalHex: 0x292524,
+        stoneHex: 0xe7dec8,
+        wallHex: 0xf7f3eb,
+        artHexA: 0x6f8872,
+        artHexB: 0xb45d43,
+        lampShadeHex: 0xfef0d5,
+        plantPotHex: 0xb45d43,
+        cabinetHex: 0xfaf6ee,
+      },
+    };
+
+    // =========================================================================
+    // 2. ZERO-FILE WEBAUDIO AMBIENT SYNTHESIZER
+    // =========================================================================
+    class AmbientMusicEngine {
+      constructor() {
+        this.ctx = null;
+        this.master = null;
+        this.isPlaying = false;
+        this.isMuted = true;
+        this.timer = null;
+        this.step = 0;
+        // Warm luxury chords: Cmaj9 -> Am9 -> Fmaj9 -> G6
+        this.chords = [
+          [261.63, 329.63, 392.0, 493.88, 587.33],
+          [220.0, 261.63, 329.63, 392.0, 493.88],
+          [174.61, 220.0, 261.63, 329.63, 392.0],
+          [196.0, 246.94, 293.66, 329.63, 440.0],
+        ];
+      }
+
+      _ensureCtx() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!AudioCtx) return false;
+          this.ctx = new AudioCtx();
+          this.master = this.ctx.createGain();
+          this.master.gain.value = 0.0;
+
+          const filter = this.ctx.createBiquadFilter();
+          filter.type = "lowpass";
+          filter.frequency.value = 1400;
+
+          const delay = this.ctx.createDelay();
+          delay.delayTime.value = 0.36;
+          const fb = this.ctx.createGain();
+          fb.gain.value = 0.28;
+          delay.connect(fb);
+          fb.connect(delay);
+
+          this.dryBus = filter;
+          filter.connect(this.master);
+          filter.connect(delay);
+          delay.connect(this.master);
+          this.master.connect(this.ctx.destination);
+        }
+        if (this.ctx.state === "suspended") this.ctx.resume();
+        return true;
+      }
+
+      start() {
+        if (!this._ensureCtx()) return;
+        this.isMuted = false;
+        this.isPlaying = true;
+        this.master.gain.setTargetAtTime(0.18, this.ctx.currentTime, 0.5);
+        if (!this.timer) {
+          this._playNext();
+          this.timer = setInterval(() => this._playNext(), 2400);
+        }
+        this._syncBtn();
+      }
+
+      mute() {
+        this.isMuted = true;
+        if (this.ctx && this.master) {
+          this.master.gain.setTargetAtTime(0.0, this.ctx.currentTime, 0.25);
+        }
+        this._syncBtn();
+      }
+
+      toggle() {
+        if (this.isMuted) this.start();
+        else this.mute();
+      }
+
+      _playNext() {
+        if (this.isMuted || !this.ctx || this.ctx.state !== "running") return;
+        const now = this.ctx.currentTime;
+        const chord = this.chords[this.step % this.chords.length];
+        chord.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = idx < 2 ? "sine" : "triangle";
+          osc.frequency.setValueAtTime(freq, now + idx * 0.14);
+
+          gain.gain.setValueAtTime(0.0001, now + idx * 0.14);
+          gain.gain.linearRampToValueAtTime(idx === 0 ? 0.14 : 0.07, now + idx * 0.14 + 0.35);
+          gain.gain.exponentialRampToValueAtTime(0.0008, now + idx * 0.14 + 2.7);
+
+          osc.connect(gain);
+          gain.connect(this.dryBus);
+          osc.start(now + idx * 0.14);
+          osc.stop(now + idx * 0.14 + 2.8);
+        });
+        this.step++;
+      }
+
+      _syncBtn() {
+        const btn = document.getElementById("btn-music-toggle");
+        if (!btn) return;
+        btn.textContent = this.isMuted ? "🔇 Music Off" : "🔊 Music On";
+        btn.classList.toggle("active", !this.isMuted);
+      }
+    }
+
+    // =========================================================================
+    // 3. ARCHITECTURAL DATA & GUIDED TOUR WAYPOINTS
+    // =========================================================================
+    const FLOORS = {
+      upstairs: { id: "upstairs", baseY: 9.0, h: 8.1 },
+      main: { id: "main", baseY: 5.8, h: 8.0 },
+      garage: { id: "garage", baseY: 0.4, h: 8.0 },
+      crawl: { id: "crawl", baseY: 0.0, h: 5.4 },
+    };
+
+    const TOUR_STOPS = [
+      {
+        title: "Curb Appeal & Exterior Facade",
+        sqft: "2,833 Sq Ft Total • 4 Levels",
+        desc: "Freshly pressure-washed dark blue board-and-batten siding, stacked stone lower facade, blue trim touch-ups, timber landscape edging, and clean downspout drainage.",
+        pos: [10, 11.5, 42],
+        look: [-1, 8, 4],
+        roofOff: false,
+      },
+      {
+        title: "Main Living Room",
+        sqft: "271 Sq Ft • Main Level",
+        desc: "Bright open-concept entry living space with curtain rods removed for crisp daylight, oak LVP flooring, ceiling fan, and a closed finished laundry closet.",
+        pos: [-14.5, 11.1, 9.2],
+        look: [-8.5, 9.5, -2.5],
+        roofOff: false,
+      },
+      {
+        title: "Dining Room",
+        sqft: "121 Sq Ft • Main Level",
+        desc: "New oak LVP over tile, a set 6-seat designer dining table beneath a modern statement chandelier, and open French patio doors leading to the Rear Deck.",
+        pos: [-13.5, 11.1, -1.5],
+        look: [-17.5, 9.2, -9.5],
+        roofOff: false,
+      },
+      {
+        title: "Chef's Kitchen",
+        sqft: "115 Sq Ft • Main Level",
+        desc: "Brand-new white shaker cabinetry, speckled granite countertops, large single-bowl deep-dish sink with gooseneck faucet, GFCI outlets, and stainless steel appliances.",
+        pos: [-8.8, 11.1, -2.0],
+        look: [-3.5, 9.3, -8.5],
+        roofOff: false,
+      },
+      {
+        title: "Rear Balcony / Deck",
+        sqft: "208 Sq Ft • Outdoor Living",
+        desc: "Freshly stained elevated cedar deck furnished with outdoor patio lounge seating, overlooking private Georgia pines.",
+        pos: [-15.5, 11.2, -14.0],
+        look: [-9.0, 9.2, -23.0],
+        roofOff: false,
+      },
+      {
+        title: "Upstairs Primary Bedroom",
+        sqft: "225 Sq Ft • Upstairs",
+        desc: "Spacious King suite featuring a newly framed closed reach-in closet with double doors—creating a dedicated solid TV wall directly facing the bed and nightstands.",
+        pos: [9.8, 14.3, -2.2],
+        look: [17.4, 12.6, -4.5],
+        roofOff: false,
+      },
+      {
+        title: "Spa Primary Bathroom",
+        sqft: "69 Sq Ft • Upstairs",
+        desc: "Extended modern ceramic tile shower with swinging glass enclosure keeping the natural window intact, plus refinished 6-drawer double vanity, new hardware, and full mirror.",
+        pos: [7.6, 14.3, -5.2],
+        look: [3.0, 12.5, -5.6],
+        roofOff: false,
+      },
+      {
+        title: "Hall Bath & Secondary Bedrooms",
+        sqft: "278 Sq Ft Combined • Upstairs",
+        desc: "Refreshed Shared Hall Bath with new vanity and glass sliding shower door, paired with Bedrooms 2 & 3 featuring matching modern ceiling fans.",
+        pos: [8.5, 14.3, 4.8],
+        look: [15.5, 12.8, 10.5],
+        roofOff: false,
+      },
+      {
+        title: "In-Law Suite Living & Open Kitchenette",
+        sqft: "399 Sq Ft Open Flow • Lower Level",
+        desc: "Interior wall removed to unite the driveway-entry Kitchenette (granite, sink, fridge) with the LVP Living Room, cooled & heated by a Ductless Heat-Pump Mini-Split.",
+        pos: [10.0, 5.7, -2.5],
+        look: [19.5, 3.6, 8.5],
+        roofOff: false,
+      },
+      {
+        title: "In-Law Conforming Bedroom & Lower Bath",
+        sqft: "197 Sq Ft Combined • Lower Level",
+        desc: "Front-Left bedroom upgraded with a new framed closet next to the stairs, plus a clean Lower Bath featuring boxed-in plumbing and a glass shower enclosure.",
+        pos: [10.8, 5.7, 8.2],
+        look: [4.2, 3.8, 11.0],
+        roofOff: false,
+      },
+      {
+        title: "Full 4-Level Architectural Dollhouse",
+        sqft: "2,086 Sq Ft Heated/Cooled Living",
+        desc: "Roofs and ceilings lifted cleanly to reveal every floorplan level, room proportion, and designer furniture layout across 1733 Sara Ct SE.",
+        pos: [36, 36, 42],
+        look: [2, 6, 0],
+        roofOff: true,
+      },
+    ];
+
+    // =========================================================================
+    // 4. BUYER TOUR 3D ENGINE
+    // =========================================================================
+    class BuyerTourApp {
+      constructor() {
+        this.container = document.getElementById("canvas-wrap");
+        this.music = new AmbientMusicEngine();
+        this.styleKey = "scandi";
+        this.roofOff = false;
+        this.walkMode = false;
+        this.tourActive = false;
+        this.tourPaused = false;
+        this.tourIdx = 0;
+        this.tourPhase = "move"; // "move" | "pause"
+        this.tourPhaseStart = performance.now();
+        this.tourPausedAt = 0;
+        this.fromPos = new THREE.Vector3();
+        this.fromLook = new THREE.Vector3();
+
+        this.floorGroups = {};
+        this.roofCeilingsGroup = new THREE.Group();
+        this.exteriorGroup = new THREE.Group();
+        this.fans = [];
+        this.lampLights = [];
+        this.bulbMats = [];
+        this.styleMats = {};
+        this.wallColliders = [];
+        this.wallMeshesForCam = [];
+        this.cameraRaycaster = new THREE.Raycaster();
+
+        // GTA 3rd-Person + 16mm Wide Lens Physics State
+        this.thirdPerson = true;
+        this.followDist = 4.6;
+        this.playerPos = new THREE.Vector3(-12.5, 6.15, 7.8);
+        this.avatarHeading = Math.PI;
+        this.walkCycle = 0;
+
+        this.walkKeys = {};
+        this.walkYaw = 0.25;
+        this.walkPitch = 0.14;
+        this.isDraggingLook = false;
+        this.lastMouse = { x: 0, y: 0 };
+        this.touchMoveVec = { x: 0, y: 0 };
+
+        this.clock = new THREE.Clock();
+        this._initThree();
+        this._initMaterials();
+        this._buildEnvironment();
+        this._buildHouseArchitecture();
+        this._buildFurniture();
+        this._buildAvatar();
+        this._bindUI();
+        this.applyStyle("scandi");
+        this.setTimeOfDay(35); // Midday default
+        this.setCameraDollhouse(false);
+        this._animate();
+      }
+
+      _initThree() {
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0x93c5fd);
+        this.scene.fog = new THREE.FogExp2(0x93c5fd, 0.0022);
+
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        this.camera = new THREE.PerspectiveCamera(54, w / h, 0.2, 650);
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+        this.renderer.setSize(w, h);
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        this.renderer.toneMappingExposure = 1.08;
+        this.container.appendChild(this.renderer.domElement);
+
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.enableDamping = true;
+        this.controls.dampingFactor = 0.07;
+        this.controls.maxPolarAngle = Math.PI / 2 - 0.02;
+        this.controls.minDistance = 4;
+        this.controls.maxDistance = 150;
+
+        // Lighting
+        this.hemiLight = new THREE.HemisphereLight(0xe0f2fe, 0x334155, 0.95);
+        this.scene.add(this.hemiLight);
+
+        this.sunLight = new THREE.DirectionalLight(0xfffbeb, 1.85);
+        this.sunLight.position.set(42, 68, 38);
+        this.sunLight.castShadow = true;
+        this.sunLight.shadow.mapSize.set(2048, 2048);
+        this.sunLight.shadow.camera.left = -58;
+        this.sunLight.shadow.camera.right = 58;
+        this.sunLight.shadow.camera.top = 58;
+        this.sunLight.shadow.camera.bottom = -58;
+        this.sunLight.shadow.bias = -0.0004;
+        this.scene.add(this.sunLight);
+
+        this.fillLight = new THREE.DirectionalLight(0xbae6fd, 0.48);
+        this.fillLight.position.set(-40, 28, -40);
+        this.scene.add(this.fillLight);
+
+        // Baked lightweight PMREM environment map for soft floor, tile, granite & glass reflections
+        const pmrem = new THREE.PMREMGenerator(this.renderer);
+        const envScene = new THREE.Scene();
+        envScene.background = new THREE.Color(0xcbd5e1);
+        const envSky = new THREE.Mesh(
+          new THREE.SphereGeometry(20, 12, 8),
+          new THREE.MeshBasicMaterial({ color: 0xe0f2fe, side: THREE.BackSide })
+        );
+        const envWarm = new THREE.Mesh(
+          new THREE.PlaneGeometry(30, 30),
+          new THREE.MeshBasicMaterial({ color: 0xfef3c7, side: THREE.DoubleSide })
+        );
+        envWarm.rotation.x = Math.PI / 2;
+        envWarm.position.y = 10;
+        const envGround = new THREE.Mesh(
+          new THREE.PlaneGeometry(30, 30),
+          new THREE.MeshBasicMaterial({ color: 0x334155, side: THREE.DoubleSide })
+        );
+        envGround.rotation.x = Math.PI / 2;
+        envGround.position.y = -10;
+        envScene.add(envSky, envWarm, envGround);
+        const envRT = pmrem.fromScene(envScene, 0.04);
+        this.scene.environment = envRT.texture;
+        pmrem.dispose();
+      }
+
+      _makeTex(drawFn, rx = 4, ry = 4, size = 512) {
+        const c = document.createElement("canvas");
+        c.width = size;
+        c.height = size;
+        const ctx = c.getContext("2d");
+        drawFn(ctx, size);
+        const t = new THREE.CanvasTexture(c);
+        t.wrapS = THREE.RepeatWrapping;
+        t.wrapT = THREE.RepeatWrapping;
+        t.repeat.set(rx, ry);
+        t.anisotropy = Math.min(8, this.renderer.capabilities.getMaxAnisotropy());
+        return t;
+      }
+
+      _initMaterials() {
+        const lvpTex = this._makeTex((ctx, s) => {
+          ctx.fillStyle = "#9d7b54";
+          ctx.fillRect(0, 0, s, s);
+          const ph = s / 6;
+          const tones = ["#94724c", "#a7845c", "#8c6b46", "#b08e67", "#9a7852", "#886743"];
+          for (let i = 0; i < 6; i++) {
+            ctx.fillStyle = tones[i];
+            ctx.fillRect(0, i * ph, s, ph - 2);
+            // Realistic fine wood grain fibers
+            ctx.strokeStyle = "rgba(48,26,10,0.16)";
+            ctx.lineWidth = 1.2;
+            for (let g = 0; g < 10; g++) {
+              const gy = i * ph + ((g + 0.5) * ph) / 10;
+              ctx.beginPath();
+              ctx.moveTo(0, gy);
+              ctx.bezierCurveTo(s * 0.33, gy + ((i + g) % 3) - 1, s * 0.66, gy - ((i + g) % 2), s, gy);
+              ctx.stroke();
+            }
+            ctx.fillStyle = "rgba(35,18,8,0.42)";
+            ctx.fillRect(((i * 193) % (s - 60)) + 30, i * ph, 3, ph);
+            ctx.fillRect(0, (i + 1) * ph - 2, s, 2);
+          }
+        }, 5, 5);
+        const lvpBump = this._makeTex((ctx, s) => {
+          ctx.fillStyle = "#c8c8c8";
+          ctx.fillRect(0, 0, s, s);
+          const ph = s / 6;
+          for (let i = 0; i < 6; i++) {
+            ctx.strokeStyle = "#a8a8a8";
+            ctx.lineWidth = 1;
+            for (let g = 0; g < 8; g++) {
+              const gy = i * ph + ((g + 0.5) * ph) / 8;
+              ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(s, gy); ctx.stroke();
+            }
+            ctx.fillStyle = "#222222";
+            ctx.fillRect(((i * 193) % (s - 60)) + 30, i * ph, 3, ph);
+            ctx.fillRect(0, (i + 1) * ph - 2, s, 2);
+          }
+        }, 5, 5);
+
+        const graniteTex = this._makeTex((ctx, s) => {
+          ctx.fillStyle = "#eeece7";
+          ctx.fillRect(0, 0, s, s);
+          const specks = ["#d6d3d1", "#78716c", "#44403c", "#a8a29e", "#fafaf9", "#292524"];
+          for (let i = 0; i < 1200; i++) {
+            ctx.fillStyle = specks[i % specks.length];
+            ctx.fillRect((i * 83) % s, (i * 131) % s, 2 + (i % 5), 2 + ((i * 3) % 4));
+          }
+        }, 3, 2);
+        const graniteBump = this._makeTex((ctx, s) => {
+          ctx.fillStyle = "#dcdcdc";
+          ctx.fillRect(0, 0, s, s);
+          for (let i = 0; i < 600; i++) {
+            ctx.fillStyle = i % 2 === 0 ? "#c6c6c6" : "#eaeaea";
+            ctx.fillRect((i * 79) % s, (i * 113) % s, 3, 3);
+          }
+        }, 3, 2);
+
+        const bathTileTex = this._makeTex((ctx, s) => {
+          ctx.fillStyle = "#cbd5e1";
+          ctx.fillRect(0, 0, s, s);
+          const cw = s / 4;
+          for (let r = 0; r < 4; r++) {
+            for (let c = 0; c < 4; c++) {
+              ctx.fillStyle = (r + c) % 2 === 0 ? "#f8fafc" : "#e9eef5";
+              ctx.fillRect(c * cw + 3, r * cw + 3, cw - 6, cw - 6);
+            }
+          }
+        }, 4, 4);
+        const bathTileBump = this._makeTex((ctx, s) => {
+          ctx.fillStyle = "#303030";
+          ctx.fillRect(0, 0, s, s);
+          const cw = s / 4;
+          ctx.fillStyle = "#e8e8e8";
+          for (let r = 0; r < 4; r++) {
+            for (let c = 0; c < 4; c++) {
+              ctx.fillRect(c * cw + 3, r * cw + 3, cw - 6, cw - 6);
+            }
+          }
+        }, 4, 4);
+
+        const sidingTex = this._makeTex((ctx, s) => {
+          ctx.fillStyle = "#173a63";
+          ctx.fillRect(0, 0, s, s);
+          const sw = s / 8;
+          for (let i = 0; i < 8; i++) {
+            ctx.fillStyle = "#214d80";
+            ctx.fillRect(i * sw, 0, 10, s);
+            ctx.fillStyle = "rgba(0,0,0,0.3)";
+            ctx.fillRect(i * sw + 10, 0, 5, s);
+          }
+        }, 1, 1);
+        const sidingBump = this._makeTex((ctx, s) => {
+          ctx.fillStyle = "#909090";
+          ctx.fillRect(0, 0, s, s);
+          const sw = s / 8;
+          for (let i = 0; i < 8; i++) {
+            ctx.fillStyle = "#f0f0f0";
+            ctx.fillRect(i * sw, 0, 10, s);
+            ctx.fillStyle = "#303030";
+            ctx.fillRect(i * sw + 10, 0, 4, s);
+          }
+        }, 1, 1);
+
+        const stoneTex = this._makeTex((ctx, s) => {
+          ctx.fillStyle = "#57534e";
+          ctx.fillRect(0, 0, s, s);
+          const rh = s / 6;
+          const pal = ["#a8a29e", "#b5a694", "#9ca3af", "#d6d3d1", "#9a8a78"];
+          for (let r = 0; r < 6; r++) {
+            let x = 0, idx = r * 3;
+            while (x < s) {
+              const w = 72 + ((idx * 57) % 88);
+              ctx.fillStyle = pal[idx % pal.length];
+              ctx.fillRect(x + 4, r * rh + 4, Math.min(w - 8, s - x - 4), rh - 8);
+              x += w; idx++;
+            }
+          }
+        }, 1, 1);
+        const stoneBump = this._makeTex((ctx, s) => {
+          ctx.fillStyle = "#242424";
+          ctx.fillRect(0, 0, s, s);
+          const rh = s / 6;
+          for (let r = 0; r < 6; r++) {
+            let x = 0, idx = r * 3;
+            while (x < s) {
+              const w = 72 + ((idx * 57) % 88);
+              ctx.fillStyle = idx % 2 === 0 ? "#dcdcdc" : "#b8b8b8";
+              ctx.fillRect(x + 4, r * rh + 4, Math.min(w - 8, s - x - 4), rh - 8);
+              x += w; idx++;
+            }
+          }
+        }, 1, 1);
+
+        const deckTex = this._makeTex((ctx, s) => {
+          ctx.fillStyle = "#452715";
+          ctx.fillRect(0, 0, s, s);
+          const rh = s / 8;
+          for (let i = 0; i < 8; i++) {
+            ctx.fillStyle = i % 2 === 0 ? "#8c5432" : "#7c4829";
+            ctx.fillRect(0, i * rh + 4, s, rh - 8);
+          }
+        }, 6, 6);
+        const deckBump = this._makeTex((ctx, s) => {
+          ctx.fillStyle = "#202020";
+          ctx.fillRect(0, 0, s, s);
+          const rh = s / 8;
+          ctx.fillStyle = "#dedede";
+          for (let i = 0; i < 8; i++) {
+            ctx.fillRect(0, i * rh + 4, s, rh - 8);
+          }
+        }, 6, 6);
+
+        const roofTex = this._makeTex((ctx, s) => {
+          ctx.fillStyle = "#1e242b";
+          ctx.fillRect(0, 0, s, s);
+          const rh = s / 8;
+          for (let r = 0; r < 8; r++) {
+            for (let c = 0; c < 4; c++) {
+              ctx.fillStyle = (r + c) % 2 === 0 ? "#28303a" : "#1f262e";
+              ctx.fillRect(c * (s / 4) + 3, r * rh + 3, s / 4 - 6, rh - 5);
+            }
+          }
+        }, 6, 4);
+
+        this.lvpMat = new THREE.MeshStandardMaterial({
+          map: lvpTex,
+          bumpMap: lvpBump,
+          bumpScale: 0.018,
+          roughness: 0.24,
+          metalness: 0.08,
+          envMapIntensity: 0.8,
+        });
+        this.bathTileMat = new THREE.MeshStandardMaterial({
+          map: bathTileTex,
+          bumpMap: bathTileBump,
+          bumpScale: 0.022,
+          roughness: 0.2,
+          metalness: 0.08,
+          envMapIntensity: 0.78,
+        });
+        this.graniteMat = new THREE.MeshStandardMaterial({
+          map: graniteTex,
+          bumpMap: graniteBump,
+          bumpScale: 0.008,
+          roughness: 0.14,
+          metalness: 0.14,
+          envMapIntensity: 0.95,
+        });
+        this.deckMat = new THREE.MeshStandardMaterial({
+          map: deckTex,
+          bumpMap: deckBump,
+          bumpScale: 0.025,
+          roughness: 0.62,
+          envMapIntensity: 0.22,
+        });
+        this.sidingMat = new THREE.MeshStandardMaterial({
+          map: sidingTex,
+          bumpMap: sidingBump,
+          bumpScale: 0.028,
+          roughness: 0.68,
+          envMapIntensity: 0.22,
+        });
+        this.stoneMat = new THREE.MeshStandardMaterial({
+          map: stoneTex,
+          bumpMap: stoneBump,
+          bumpScale: 0.035,
+          roughness: 0.86,
+          envMapIntensity: 0.16,
+        });
+        this.roofMat = new THREE.MeshStandardMaterial({ map: roofTex, roughness: 0.85, envMapIntensity: 0.15 });
+        this.glassMat = new THREE.MeshStandardMaterial({
+          color: 0xdbeafe,
+          roughness: 0.05,
+          metalness: 0.35,
+          envMapIntensity: 1.25,
+          transparent: true,
+          opacity: 0.32,
+          side: THREE.DoubleSide,
+        });
+        this.showerGlassMat = new THREE.MeshStandardMaterial({
+          color: 0xe0f2fe,
+          roughness: 0.04,
+          metalness: 0.25,
+          envMapIntensity: 1.2,
+          transparent: true,
+          opacity: 0.25,
+          side: THREE.DoubleSide,
+        });
+        this.stainlessMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, metalness: 0.8, roughness: 0.22 });
+        this.chromeMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.88, roughness: 0.15 });
+        this.trimWhiteMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.4 });
+        this.porcelainMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 });
+
+        // Style-reactive materials
+        this.styleMats = {
+          wood: new THREE.MeshStandardMaterial({ color: 0xc8a97e, roughness: 0.55 }),
+          woodDark: new THREE.MeshStandardMaterial({ color: 0xa6875e, roughness: 0.6 }),
+          fabricMain: new THREE.MeshStandardMaterial({ color: 0xf4efe6, roughness: 0.88 }),
+          fabricAccent: new THREE.MeshStandardMaterial({ color: 0xd6cfc2, roughness: 0.85 }),
+          rug: new THREE.MeshStandardMaterial({ color: 0xeae4da, roughness: 0.95 }),
+          metal: new THREE.MeshStandardMaterial({ color: 0x18181b, metalness: 0.72, roughness: 0.28 }),
+          stone: new THREE.MeshStandardMaterial({ color: 0xf1ede4, roughness: 0.35 }),
+          wall: new THREE.MeshStandardMaterial({ color: 0xfafaf9, roughness: 0.82 }),
+          artA: new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.7 }),
+          artB: new THREE.MeshStandardMaterial({ color: 0xd6cfc2, roughness: 0.7 }),
+          lampShade: new THREE.MeshStandardMaterial({ color: 0xfffbeb, roughness: 0.7, emissive: 0xfde68a, emissiveIntensity: 0.05 }),
+          plantPot: new THREE.MeshStandardMaterial({ color: 0xf5f5f4, roughness: 0.6 }),
+          cabinet: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.35 }),
+        };
+      }
+
+      _buildEnvironment() {
+        const lawn = new THREE.Mesh(
+          new THREE.PlaneGeometry(260, 260),
+          new THREE.MeshStandardMaterial({ color: 0x2a4d32, roughness: 0.95 })
+        );
+        lawn.rotation.x = -Math.PI / 2;
+        lawn.position.y = -0.15;
+        lawn.receiveShadow = true;
+        this.scene.add(lawn);
+
+        const driveMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.88 });
+        const drive = new THREE.Mesh(new THREE.PlaneGeometry(20, 36), driveMat);
+        drive.rotation.x = -Math.PI / 2;
+        drive.position.set(13.5, -0.04, 34);
+        drive.receiveShadow = true;
+        this.scene.add(drive);
+
+        const walk = new THREE.Mesh(new THREE.PlaneGeometry(16, 5), driveMat);
+        walk.rotation.x = -Math.PI / 2;
+        walk.position.set(-1, -0.03, 17.5);
+        this.scene.add(walk);
+
+        // Timber landscape border edging & mulch bed
+        const timberMat = new THREE.MeshStandardMaterial({ color: 0x5c3d28, roughness: 0.88 });
+        const bed = new THREE.Mesh(new THREE.BoxGeometry(15.5, 0.25, 4.2), new THREE.MeshStandardMaterial({ color: 0x2d1e15, roughness: 0.95 }));
+        bed.position.set(-13.5, 0.0, 14.3);
+        const timberF = new THREE.Mesh(new THREE.BoxGeometry(15.8, 0.45, 0.45), timberMat);
+        timberF.position.set(-13.5, 0.12, 16.4);
+        this.scene.add(bed, timberF);
+
+        // Side Wood Fence & Gate
+        const fenceMat = new THREE.MeshStandardMaterial({ color: 0x8a6543, roughness: 0.86 });
+        for (let x = -28.0; x <= -22.2; x += 0.55) {
+          const p = new THREE.Mesh(new THREE.BoxGeometry(0.42, 5.2, 0.16), fenceMat);
+          p.position.set(x, 2.6, 2.5);
+          p.castShadow = true;
+          this.scene.add(p);
+        }
+
+        // Georgia Pines
+        const trunkMat = new THREE.MeshStandardMaterial({ color: 0x4a3728, roughness: 0.9 });
+        const foliageMat = new THREE.MeshStandardMaterial({ color: 0x1e462d, roughness: 0.85 });
+        [
+          [-35, -22], [-38, 6], [-32, 24], [36, -22], [40, 8],
+          [34, 24], [-18, -42], [6, -44], [27.5, -14.5], [-44, -8],
+        ].forEach(([tx, tz], i) => {
+          const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.9, 13, 7), trunkMat);
+          trunk.position.set(tx, 6.5, tz);
+          trunk.castShadow = true;
+          this.scene.add(trunk);
+          const crown = new THREE.Mesh(new THREE.ConeGeometry(5.2 + (i % 3), 16 + (i % 4) * 2, 7), foliageMat);
+          crown.position.set(tx, 16.5, tz);
+          crown.castShadow = true;
+          this.scene.add(crown);
+        });
+      }
+
+      _buildHouseArchitecture() {
+        Object.keys(FLOORS).forEach((k) => {
+          const g = new THREE.Group();
+          g.position.y = FLOORS[k].baseY;
+          this.floorGroups[k] = g;
+          this.scene.add(g);
+        });
+
+        const addSlab = (floor, x, z, w, d, mat) => {
+          const m = new THREE.Mesh(new THREE.BoxGeometry(w, 0.35, d), mat);
+          m.position.set(x + w / 2, 0.175, z + d / 2);
+          m.receiveShadow = true;
+          m.castShadow = true;
+          this.floorGroups[floor].add(m);
+        };
+
+        const addCollider = (floor, minX, maxX, minZ, maxZ, minY, maxY) => {
+          this.wallColliders.push({ floor, minX, maxX, minZ, maxZ, minY, maxY });
+        };
+
+        const addWall = (floor, x1, z1, x2, z2, h, opts = {}) => {
+          const grp = this.floorGroups[floor];
+          const baseY = FLOORS[floor].baseY;
+          const wallT = opts.t || 0.38;
+          const dx = x2 - x1;
+          const dz = z2 - z1;
+          const len = Math.hypot(dx, dz);
+          const isX = Math.abs(dx) >= Math.abs(dz);
+          const openings = [...(opts.openings || [])].sort((a, b) => a.pos - b.pos);
+          let cursor = 0;
+
+          const makeSeg = (s, segL, yBot, segH) => {
+            if (segL <= 0.05 || segH <= 0.05) return;
+            const c = s + segL / 2;
+            const wx = isX ? x1 + c : x1;
+            const wz = isX ? z1 : z1 + c;
+            const bw = isX ? segL : wallT;
+            const bd = isX ? wallT : segL;
+            const mesh = new THREE.Mesh(
+              new THREE.BoxGeometry(bw, segH, bd),
+              opts.mat || this.styleMats.wall
+            );
+            mesh.position.set(wx, 0.35 + yBot + segH / 2, wz);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            grp.add(mesh);
+            this.wallMeshesForCam.push(mesh);
+
+            // Register wall collider only for ground-level segments & under-window sills (keep doorway/arch headers passable!)
+            if (yBot === 0 && segH >= 1.5 && !opts.noCollider) {
+              addCollider(
+                floor,
+                wx - bw / 2,
+                wx + bw / 2,
+                wz - bd / 2,
+                wz + bd / 2,
+                baseY + 0.35,
+                baseY + 0.35 + segH
+              );
+            }
+
+            if (yBot === 0 && segL > 0.3 && !opts.noBase) {
+              const base = new THREE.Mesh(
+                new THREE.BoxGeometry(isX ? segL : wallT + 0.06, 0.36, isX ? wallT + 0.06 : segL),
+                this.trimWhiteMat
+              );
+              base.position.set(wx, 0.35 + 0.18, wz);
+              grp.add(base);
+            }
+          };
+
+          openings.forEach((op) => {
+            const s = Math.max(cursor, op.pos);
+            const e = Math.min(len, s + op.w);
+            const w = e - s;
+            if (s > cursor) makeSeg(cursor, s - cursor, 0, h);
+            if (w > 0.15) {
+              const sill = op.sill || 0;
+              const topY = Math.min(h, sill + op.h);
+              if (sill > 0.05) makeSeg(s, w, 0, sill);
+              if (h - topY > 0.05) makeSeg(s, w, topY, h - topY);
+
+              const c = s + w / 2;
+              const cx = isX ? x1 + c : x1;
+              const cz = isX ? z1 : z1 + c;
+              if (op.type === "window") {
+                const f = new THREE.Mesh(new THREE.BoxGeometry(isX ? w : wallT + 0.08, op.h, isX ? wallT + 0.08 : w), this.glassMat);
+                f.position.set(cx, 0.35 + sill + op.h / 2, cz);
+                grp.add(f);
+                const trimT = new THREE.Mesh(new THREE.BoxGeometry(isX ? w + 0.15 : wallT + 0.14, 0.14, isX ? wallT + 0.14 : w + 0.15), this.trimWhiteMat);
+                trimT.position.set(cx, 0.35 + sill + op.h - 0.07, cz);
+                const trimB = new THREE.Mesh(new THREE.BoxGeometry(isX ? w + 0.2 : wallT + 0.2, 0.16, isX ? wallT + 0.2 : w + 0.2), this.trimWhiteMat);
+                trimB.position.set(cx, 0.35 + sill + 0.08, cz);
+                grp.add(trimT, trimB);
+              }
+              // Doors omitted intentionally so walkthrough views stay unobstructed
+            }
+            cursor = e;
+          });
+          if (cursor < len) makeSeg(cursor, len - cursor, 0, h);
+        };
+
+        // --- FLOOR SLABS ---
+        addSlab("main", -21.5, 0.0, 21.5, 11.9, this.lvpMat); // Living
+        addSlab("main", 0.0, 1.6, 3.4, 3.8, this.lvpMat); // Split-foyer landing connecting Main Living, Garage stairs & Upstairs stairs
+        addSlab("main", -21.5, -11.1, 11.0, 11.1, this.lvpMat); // Dining
+        addSlab("main", -10.5, -11.1, 10.5, 11.1, this.lvpMat); // Kitchen
+        addSlab("main", -21.5, -27.2, 22.0, 16.1, this.deckMat); // Rear Deck
+
+        addSlab("upstairs", 0.0, -10.5, 8.3, 8.8, this.bathTileMat); // Primary Bath
+        addSlab("upstairs", 8.3, -10.5, 16.2, 13.9, this.lvpMat); // Primary Bed
+        addSlab("upstairs", 0.0, -1.7, 8.3, 5.1, this.bathTileMat); // Hall Bath
+        addSlab("upstairs", 0.0, 3.4, 12.2, 3.1, this.lvpMat); // Hall
+        addSlab("upstairs", 0.0, 6.5, 12.2, 9.3, this.lvpMat); // Bed 2
+        addSlab("upstairs", 12.2, 3.4, 12.3, 12.4, this.lvpMat); // Bed 3
+
+        addSlab("garage", 0.0, -10.5, 10.7, 5.5, this.bathTileMat); // Lower Bath
+        addSlab("garage", 0.0, -5.0, 3.4, 10.5, this.lvpMat); // Stairwell landing
+        addSlab("garage", 3.4, -5.0, 21.1, 10.5, this.lvpMat); // In-Law Living
+        addSlab("garage", 10.7, -10.5, 13.8, 5.5, this.lvpMat); // In-Law Living Top-Right
+        addSlab("garage", 0.0, 5.5, 13.8, 10.3, this.lvpMat); // In-Law Bed Front-Left
+        addSlab("garage", 13.8, 5.5, 10.7, 10.3, this.lvpMat); // In-Law Open Kitchenette Front-Right
+
+        // --- CRAWL SPACE (4th Level — Clean Post-Rehab Vapor Barrier, Rear Door & Water Heater) ---
+        const vaporMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.55 });
+        const cmuMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.9 });
+        addSlab("crawl", -21.5, -11.1, 21.5, 23.0, vaporMat);
+        addWall("crawl", -21.5, -10.9, 0.0, -10.9, 5.4, {
+          mat: cmuMat,
+          noBase: true,
+          openings: [{ type: "door", pos: 13.5, w: 2.8, h: 4.4, angle: 0.65 }],
+        });
+        // Crawl Space exterior stone perimeter colliders (so character walks around foundation outside without entering solid box)
+        addCollider("crawl", -21.8, 0.0, 11.7, 12.2, 0.0, 5.2);
+        addCollider("crawl", -21.8, -21.3, -11.2, 12.2, 0.0, 5.8);
+        addCollider("crawl", -0.3, 0.1, -11.2, 12.2, 0.0, 5.8);
+        [[-11.0, -5.0], [-11.0, 4.0]].forEach(([px, pz]) => {
+          const pier = new THREE.Mesh(new THREE.BoxGeometry(1.4, 5.2, 1.4), cmuMat);
+          pier.position.set(px, 2.9, pz);
+          this.floorGroups.crawl.add(pier);
+        });
+        const wh = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 4.3, 14), this.porcelainMat);
+        wh.position.set(-3.2, 2.5, -8.8);
+        this.floorGroups.crawl.add(wh);
+
+        // --- MAIN FLOOR WALLS ---
+        addWall("main", -21.5, 11.7, 0.0, 11.7, 8.0, {
+          openings: [
+            { type: "window", pos: 4.0, w: 8.2, h: 4.5, sill: 2.2 },
+            { type: "door", pos: 16.5, w: 3.2, h: 6.8, angle: 0.45 },
+          ],
+        });
+        addWall("main", -21.3, -11.1, -21.3, 11.9, 8.0, {
+          openings: [
+            { type: "window", pos: 3.5, w: 3.6, h: 4.2, sill: 2.5 },
+            { type: "window", pos: 14.9, w: 3.6, h: 4.2, sill: 2.5 },
+          ],
+        });
+        addWall("main", -21.5, -10.9, 0.0, -10.9, 8.0, {
+          openings: [
+            { type: "french", pos: 2.8, w: 5.4, h: 6.8 },
+            { type: "window", pos: 14.4, w: 3.6, h: 3.4, sill: 3.6 },
+          ],
+        });
+        addWall("main", -0.2, -11.1, -0.2, 11.9, 8.0, {
+          openings: [{ type: "arch", pos: 11.5, w: 7.6, h: 7.2 }],
+        });
+        addWall("main", -21.5, 0.0, 0.0, 0.0, 8.0, {
+          openings: [
+            { type: "arch", pos: 2.2, w: 6.5, h: 7.0 },
+            { type: "door", pos: 13.5, w: 3.0, h: 6.8, angle: 1.15 },
+          ],
+        });
+        addWall("main", -10.5, -11.1, -10.5, 0.0, 8.0, {
+          openings: [{ type: "arch", pos: 3.2, w: 4.4, h: 7.0 }],
+        });
+
+        // Main Floor Deck Railings & Stairs
+        const dGrp = this.floorGroups.main;
+        const addDeckRail = (x1, z1, x2, z2) => {
+          const len = Math.hypot(x2 - x1, z2 - z1);
+          const isX = Math.abs(x2 - x1) > Math.abs(z2 - z1);
+          const mx = (x1 + x2) / 2, mz = (z1 + z2) / 2;
+          const top = new THREE.Mesh(new THREE.BoxGeometry(isX ? len : 0.3, 0.22, isX ? 0.3 : len), this.styleMats.woodDark);
+          top.position.set(mx, 3.55, mz);
+          dGrp.add(top);
+          const n = Math.floor(len / 0.8);
+          for (let i = 1; i < n; i++) {
+            const b = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.8, 0.12), this.styleMats.woodDark);
+            b.position.set(x1 + ((x2 - x1) * i) / n, 1.9, z1 + ((z2 - z1) * i) / n);
+            dGrp.add(b);
+          }
+          // Register railing collider so player doesn't fall off deck (stair gap -18.5..-14.5 stays open)
+          addCollider(
+            "main",
+            Math.min(x1, x2) - 0.15,
+            Math.max(x1, x2) + 0.15,
+            Math.min(z1, z2) - 0.15,
+            Math.max(z1, z2) + 0.15,
+            6.15,
+            9.8
+          );
+        };
+        addDeckRail(-21.5, -27.2, -18.5, -27.2);
+        addDeckRail(-14.5, -27.2, 0.5, -27.2);
+        addDeckRail(-21.5, -27.2, -21.5, -11.1);
+        addDeckRail(0.5, -27.2, 0.5, -11.1);
+        for (let i = 0; i < 8; i++) {
+          const st = new THREE.Mesh(new THREE.BoxGeometry(4.0, 0.24, 1.05), this.styleMats.woodDark);
+          st.position.set(-16.5, -0.35 - i * 0.7, -27.75 - i * 0.95);
+          dGrp.add(st);
+        }
+
+        // --- UPSTAIRS WALLS ---
+        addWall("upstairs", 0.0, -10.3, 24.5, -10.3, 8.1, {
+          openings: [
+            { type: "window", pos: 5.9, w: 1.8, h: 2.8, sill: 4.1 },
+            { type: "window", pos: 11.8, w: 3.8, h: 4.2, sill: 2.5 },
+            { type: "window", pos: 18.5, w: 3.8, h: 4.2, sill: 2.5 },
+          ],
+        });
+        addWall("upstairs", 24.3, -10.5, 24.3, 15.8, 8.1, {
+          openings: [
+            { type: "window", pos: 5.0, w: 3.8, h: 4.2, sill: 2.5 },
+            { type: "window", pos: 18.1, w: 3.6, h: 4.0, sill: 2.6 },
+          ],
+        });
+        addWall("upstairs", 0.0, 15.6, 24.5, 15.6, 8.1, {
+          openings: [
+            { type: "window", pos: 4.2, w: 3.8, h: 4.2, sill: 2.5 },
+            { type: "window", pos: 16.4, w: 3.8, h: 4.2, sill: 2.5 },
+          ],
+        });
+        addWall("upstairs", 0.2, -10.5, 0.2, 15.8, 8.1, {
+          openings: [
+            { type: "arch", pos: 14.0, w: 2.8, h: 7.2 },
+            { type: "window", pos: 19.8, w: 3.4, h: 4.0, sill: 2.6 },
+          ],
+        });
+        addWall("upstairs", 8.3, -10.5, 8.3, 3.4, 8.1, {
+          openings: [{ type: "door", pos: 3.5, w: 2.8, h: 6.8, angle: 0.95 }],
+        });
+        addWall("upstairs", 0.0, -1.7, 8.3, -1.7, 8.1, {});
+        addWall("upstairs", 0.0, 3.4, 24.5, 3.4, 8.1, {
+          openings: [
+            { type: "door", pos: 4.2, w: 2.6, h: 6.8, angle: -0.95 },
+            { type: "door", pos: 8.8, w: 2.8, h: 6.8, angle: 0.95 },
+          ],
+        });
+        addWall("upstairs", 0.0, 6.5, 12.2, 6.5, 8.1, {
+          openings: [{ type: "door", pos: 5.5, w: 2.8, h: 6.8, angle: 0.95 }],
+        });
+        addWall("upstairs", 12.2, 3.4, 12.2, 15.8, 8.1, {
+          openings: [{ type: "door", pos: 0.3, w: 2.7, h: 6.8, angle: -0.9 }],
+        });
+
+        // --- GARAGE CONVERSION / IN-LAW SUITE WALLS (Corrected 90° Layout, Knocked-Down Kitchenette Wall) ---
+        addWall("garage", 0.0, -10.3, 24.5, -10.3, 8.0, {
+          openings: [
+            { type: "window", pos: 5.4, w: 2.4, h: 2.2, sill: 4.8 },
+            { type: "door", pos: 13.3, w: 3.0, h: 6.8, angle: 0.5 }, // Backyard door
+            { type: "window", pos: 18.3, w: 3.8, h: 4.0, sill: 2.6 },
+          ],
+        });
+        addWall("garage", 24.3, -10.5, 24.3, 15.8, 8.0, {
+          openings: [
+            { type: "window", pos: 2.4, w: 3.5, h: 3.8, sill: 2.8 },
+            { type: "window", pos: 10.6, w: 3.5, h: 3.8, sill: 2.8 },
+            { type: "window", pos: 19.4, w: 3.4, h: 3.8, sill: 2.8 },
+          ],
+        });
+        addWall("garage", 0.0, 15.6, 24.5, 15.6, 8.0, {
+          openings: [
+            { type: "window", pos: 5.0, w: 3.8, h: 4.0, sill: 2.6 },
+            { type: "door", pos: 15.6, w: 3.2, h: 6.8, angle: -0.45 }, // Driveway Entry Door
+            { type: "window", pos: 20.4, w: 2.4, h: 3.8, sill: 2.8 },
+          ],
+        });
+        addWall("garage", 0.2, -10.5, 0.2, -5.0, 8.0, {});
+        addWall("garage", 0.2, -5.0, 0.2, 5.5, 5.4, {}); // Stairwell west wall stops cleanly at Main Floor slab (y=5.8)
+        addWall("garage", 0.2, 5.5, 0.2, 15.8, 8.0, {});
+        addWall("garage", 10.7, -10.5, 10.7, -5.0, 8.0, {});
+        addWall("garage", 0.0, -5.0, 10.7, -5.0, 8.0, {
+          openings: [{ type: "door", pos: 6.2, w: 2.8, h: 6.8, angle: 0.9 }],
+        });
+        addWall("garage", 3.4, -1.6, 3.4, 5.5, 8.0, {});
+        addWall("garage", 0.0, 5.5, 13.8, 5.5, 8.0, {
+          openings: [{ type: "door", pos: 8.6, w: 2.8, h: 6.8, angle: -0.95 }],
+        });
+        // Open Kitchenette cased beam where wall was knocked down (x = 13.8..24.5, z = 5.5)
+        const beam = new THREE.Mesh(new THREE.BoxGeometry(10.7, 0.85, 0.38), this.styleMats.wall);
+        beam.position.set(19.15, 7.9, 5.5);
+        this.floorGroups.garage.add(beam);
+        addWall("garage", 13.8, 5.5, 13.8, 15.8, 8.0, {});
+
+        // --- STAIRS ---
+        const treadMat = this.styleMats.woodDark;
+        for (let i = 0; i < 6; i++) {
+          const tr = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.18, 2.7), treadMat);
+          tr.position.set(-2.3 + i * 0.43, 0.35 + (i + 1) * (3.2 / 6), 4.85);
+          this.floorGroups.main.add(tr);
+        }
+        for (let i = 0; i < 8; i++) {
+          const tr = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.18, 0.9), treadMat);
+          tr.position.set(1.7, 0.35 + (i + 1) * (5.4 / 8), -3.8 + i * 0.77);
+          this.floorGroups.garage.add(tr);
+        }
+
+        // --- ROOFS & INTERIOR CEILINGS (Hidden in 1-Click Roof-Off Dollhouse View!) ---
+        const makeRoof = (w, d, h) => {
+          const sh = new THREE.Shape();
+          sh.moveTo(-w / 2, 0); sh.lineTo(0, h); sh.lineTo(w / 2, 0); sh.closePath();
+          const geo = new THREE.ExtrudeGeometry(sh, { depth: d, bevelEnabled: false });
+          geo.translate(0, 0, -d / 2);
+          return new THREE.Mesh(geo, this.roofMat);
+        };
+        const leftRoof = makeRoof(22.6, 25.0, 5.0);
+        leftRoof.position.set(-11.3, 14.1, 0.4);
+        const rightRoof = makeRoof(26.4, 28.0, 5.6);
+        rightRoof.position.set(12.3, 17.3, 2.7);
+
+        const ceilMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.9, side: THREE.DoubleSide });
+        const mainCeil = new THREE.Mesh(new THREE.PlaneGeometry(21.6, 23.0), ceilMat);
+        mainCeil.rotation.x = Math.PI / 2;
+        mainCeil.position.set(-10.8, 13.9, 0.4);
+
+        const upCeil = new THREE.Mesh(new THREE.PlaneGeometry(24.5, 26.3), ceilMat);
+        upCeil.rotation.x = Math.PI / 2;
+        upCeil.position.set(12.25, 17.15, 2.65);
+
+        const garCeil = new THREE.Mesh(new THREE.PlaneGeometry(24.5, 26.3), ceilMat);
+        garCeil.rotation.x = Math.PI / 2;
+        garCeil.position.set(12.25, 8.65, 2.65);
+
+        this.roofCeilingsGroup.add(leftRoof, rightRoof, mainCeil, upCeil, garCeil);
+        this.scene.add(this.roofCeilingsGroup);
+
+        // --- EXTERIOR CLADDING SHELL (Segmented around real windows/doors: Blue Siding, Stone Facade, Entry Steps, Condensers, Sconces) ---
+        const scaleBoxUV = (geo, uScale, vScale) => {
+          const uv = geo.attributes.uv;
+          for (let i = 0; i < uv.count; i++) {
+            uv.setXY(i, uv.getX(i) * uScale, uv.getY(i) * vScale);
+          }
+          uv.needsUpdate = true;
+          return geo;
+        };
+        const addExtBox = (w, h, d, x, y, z, mat, worldUV = false) => {
+          const geo = new THREE.BoxGeometry(w, h, d);
+          if (worldUV) scaleBoxUV(geo, Math.max(w, d) / 5.0, h / 4.5);
+          const m = new THREE.Mesh(geo, mat);
+          m.position.set(x, y, z);
+          m.castShadow = true;
+          m.receiveShadow = true;
+          this.exteriorGroup.add(m);
+        };
+        const addExtCladWall = (x1, z1, x2, z2, yBot, h, mat, openings = []) => {
+          const wallT = 0.14;
+          const dx = x2 - x1;
+          const dz = z2 - z1;
+          const len = Math.hypot(dx, dz);
+          const isX = Math.abs(dx) >= Math.abs(dz);
+          const ops = [...openings].sort((a, b) => a.pos - b.pos);
+          let cursor = 0;
+          const seg = (s, segL, yb, sh) => {
+            if (segL <= 0.05 || sh <= 0.05) return;
+            const c = s + segL / 2;
+            const bw = isX ? segL : wallT;
+            const bd = isX ? wallT : segL;
+            const geo = scaleBoxUV(new THREE.BoxGeometry(bw, sh, bd), segL / 5.0, sh / 4.5);
+            const m = new THREE.Mesh(geo, mat);
+            m.position.set(isX ? x1 + c : x1, yBot + yb + sh / 2, isX ? z1 : z1 + c);
+            m.castShadow = true;
+            m.receiveShadow = true;
+            this.exteriorGroup.add(m);
+            this.wallMeshesForCam.push(m);
+          };
+          ops.forEach((op) => {
+            const s = Math.max(cursor, op.pos);
+            const e = Math.min(len, s + op.w);
+            const w = e - s;
+            if (s > cursor) seg(cursor, s - cursor, 0, h);
+            if (w > 0.15) {
+              const sill = op.sill || 0;
+              const topY = Math.min(h, sill + op.h);
+              if (sill > 0.05) seg(s, w, 0, sill);
+              if (h - topY > 0.05) seg(s, w, topY, h - topY);
+            }
+            cursor = e;
+          });
+          if (cursor < len) seg(cursor, len - cursor, 0, h);
+        };
+
+        // Left Wing Exterior: Crawl Stone + Main Front/Side/Rear Blue Board-and-Batten Siding
+        addExtBox(22.1, 5.8, 23.6, -10.8, 2.9, 0.4, new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.9 }));
+        addExtBox(22.2, 5.8, 0.2, -10.8, 2.9, 12.12, this.stoneMat, true); // Left Crawl Front Stone (world-scaled UVs)
+        addExtCladWall(-21.5, 11.95, 0.0, 11.95, 5.8, 8.2, this.sidingMat, [
+          { pos: 4.0, w: 8.2, h: 4.5, sill: 2.2 },
+          { pos: 16.5, w: 3.2, h: 6.8, sill: 0 },
+        ]);
+        addExtCladWall(-21.65, -11.1, -21.65, 11.9, 5.8, 8.2, this.sidingMat, [
+          { pos: 3.5, w: 3.6, h: 4.2, sill: 2.5 },
+          { pos: 14.9, w: 3.6, h: 4.2, sill: 2.5 },
+        ]);
+        addExtCladWall(-21.5, -11.15, 0.0, -11.15, 5.8, 8.2, this.sidingMat, [
+          { pos: 2.8, w: 5.4, h: 6.8, sill: 0 },
+          { pos: 14.4, w: 3.6, h: 3.4, sill: 3.6 },
+        ]);
+
+        // Right Wing Exterior: Lower Front Stacked Stone (segmented around Lower Window + Driveway Door) + Upper Blue Board-and-Batten
+        addExtCladWall(0.0, 15.88, 24.5, 15.88, 0.4, 8.6, this.stoneMat, [
+          { pos: 5.0, w: 3.8, h: 4.0, sill: 2.6 },
+          { pos: 15.6, w: 3.2, h: 6.8, sill: 0 },
+          { pos: 20.4, w: 2.4, h: 3.8, sill: 2.8 },
+        ]);
+        addExtCladWall(0.0, 15.88, 24.5, 15.88, 9.0, 8.2, this.sidingMat, [
+          { pos: 4.2, w: 3.8, h: 4.2, sill: 2.5 },
+          { pos: 16.4, w: 3.8, h: 4.2, sill: 2.5 },
+        ]);
+        addExtCladWall(0.0, -10.55, 24.5, -10.55, 0.4, 8.6, this.sidingMat, [
+          { pos: 5.4, w: 2.4, h: 2.2, sill: 4.8 },
+          { pos: 13.3, w: 3.0, h: 6.8, sill: 0 },
+          { pos: 18.3, w: 3.8, h: 4.0, sill: 2.6 },
+        ]);
+        addExtCladWall(0.0, -10.55, 24.5, -10.55, 9.0, 8.2, this.sidingMat, [
+          { pos: 5.9, w: 1.8, h: 2.8, sill: 4.1 },
+          { pos: 11.8, w: 3.8, h: 4.2, sill: 2.5 },
+          { pos: 18.5, w: 3.8, h: 4.2, sill: 2.5 },
+        ]);
+        addExtCladWall(24.58, -10.5, 24.58, 15.8, 0.4, 8.6, this.sidingMat, [
+          { pos: 2.4, w: 3.5, h: 3.8, sill: 2.8 },
+          { pos: 10.6, w: 3.5, h: 3.8, sill: 2.8 },
+          { pos: 19.4, w: 3.4, h: 3.8, sill: 2.8 },
+        ]);
+        addExtCladWall(24.58, -10.5, 24.58, 15.8, 9.0, 8.2, this.sidingMat, [
+          { pos: 5.0, w: 3.8, h: 4.2, sill: 2.5 },
+          { pos: 18.1, w: 3.6, h: 4.0, sill: 2.6 },
+        ]);
+        // Blue fascia band (placed in roofCeilingsGroup so Roof-Off Dollhouse view looks cleanly inside every room!)
+        const fasciaMat = new THREE.MeshStandardMaterial({ color: 0x1e3f66, roughness: 0.45 });
+        const addFasciaStrip = (w, h, d, x, y, z) => {
+          const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), fasciaMat);
+          m.position.set(x, y, z);
+          this.roofCeilingsGroup.add(m);
+        };
+        addFasciaStrip(22.3, 0.42, 24.2, -11.15, 13.9, 0.4);
+        addFasciaStrip(25.6, 0.45, 27.2, 12.3, 17.1, 2.7);
+
+        // Front entry steps
+        for (let i = 0; i < 4; i++) {
+          addExtBox(5.2, 0.6, 1.2, -3.4, 0.3 + i * 0.6, 15.6 - i * 1.05, this.stoneMat, true);
+        }
+        // Central HVAC & Mini-Split Exterior Condensers + Downspout Extension
+        addExtBox(2.6, 3.0, 2.6, -23.8, 1.8, -3.0, this.stainlessMat);
+        addExtBox(1.3, 2.4, 2.8, 26.0, 1.4, -1.5, this.trimWhiteMat);
+        addExtBox(4.8, 0.25, 0.42, -24.3, 0.12, 11.8, new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.5 }));
+
+        // Exterior Architectural Sconces (glow warmly at Sunset & Night)
+        const sconceMetalMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.7, roughness: 0.35 });
+        const addExteriorSconce = (x, y, z, outZ = 1) => {
+          const g = new THREE.Group();
+          const backplate = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.9, 0.14), sconceMetalMat);
+          const arm = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.16, 0.38), sconceMetalMat);
+          arm.position.set(0, 0.25, outZ * 0.2);
+          const hood = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.14, 0.56), sconceMetalMat);
+          hood.position.set(0, 0.35, outZ * 0.38);
+          const sMat = new THREE.MeshStandardMaterial({ color: 0xfffbeb, emissive: 0xffd27d, emissiveIntensity: 0.1, transparent: true, opacity: 0.9 });
+          this.bulbMats.push(sMat);
+          const lantern = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.15, 0.55, 8), sMat);
+          lantern.position.set(0, 0.0, outZ * 0.38);
+          g.add(backplate, arm, hood, lantern);
+          g.position.set(x, y, z);
+          this.exteriorGroup.add(g);
+
+          const pt = new THREE.PointLight(0xffcf87, 0.0, 20, 1.4);
+          pt.position.set(x, y, z + outZ * 0.7);
+          this.exteriorGroup.add(pt);
+          this.lampLights.push({ light: pt, max: 18 });
+        };
+        addExteriorSconce(-5.6, 10.7, 12.05, 1);  // Main Front Door Left
+        addExteriorSconce(-1.2, 10.7, 12.05, 1);  // Main Front Door Right
+        addExteriorSconce(14.8, 5.5, 15.98, 1);   // Lower Driveway Entry Door Left
+        addExteriorSconce(19.4, 5.5, 15.98, 1);   // Lower Driveway Entry Door Right
+        addExteriorSconce(-19.2, 10.7, -11.25, -1); // Rear Deck French Door Left
+        addExteriorSconce(-12.6, 10.7, -11.25, -1); // Rear Deck French Door Right
+        addExteriorSconce(12.6, 5.5, -10.65, -1); // Backyard In-Law Door Left
+        addExteriorSconce(17.0, 5.5, -10.65, -1); // Backyard In-Law Door Right
+
+        this.scene.add(this.exteriorGroup);
+      }
+
+      _buildFurniture() {
+        // Helpers
+        const addBulbLight = (floor, x, y, z, intensity = 16, dist = 24) => {
+          const pt = new THREE.PointLight(0xffdfb0, 0.0, dist, 1.4);
+          pt.position.set(x, y, z);
+          this.floorGroups[floor].add(pt);
+          this.lampLights.push({ light: pt, max: intensity });
+        };
+
+        const makeRecessedLight = (floor, x, y, z, intensity = 14) => {
+          const trim = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 0.08, 14), this.trimWhiteMat);
+          trim.position.set(x, y, z);
+          const lMat = new THREE.MeshStandardMaterial({ color: 0xfffbeb, emissive: 0xfde68a, emissiveIntensity: 0.1 });
+          this.bulbMats.push(lMat);
+          const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.1, 12), lMat);
+          disc.position.set(x, y - 0.02, z);
+          this.floorGroups[floor].add(trim, disc);
+          addBulbLight(floor, x, y - 0.6, z, intensity, 20);
+        };
+
+        const makePlant = (floor, x, y, z, scale = 1) => {
+          const g = new THREE.Group();
+          const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.55 * scale, 0.42 * scale, 1.1 * scale, 12), this.styleMats.plantPot);
+          pot.position.y = 0.55 * scale;
+          const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.06 * scale, 0.09 * scale, 2.6 * scale, 8), this.styleMats.woodDark);
+          stem.position.y = 1.9 * scale;
+          const leafMat = new THREE.MeshStandardMaterial({ color: 0x2f5e3e, roughness: 0.72 });
+          [
+            [0, 3.0, 0, 0.85],
+            [0.45, 2.6, 0.3, 0.6],
+            [-0.4, 2.7, -0.3, 0.65],
+            [0.2, 2.4, -0.45, 0.55],
+          ].forEach(([lx, ly, lz, r]) => {
+            const lf = new THREE.Mesh(new THREE.SphereGeometry(r * scale, 10, 8), leafMat);
+            lf.position.set(lx * scale, ly * scale, lz * scale);
+            lf.scale.set(1.1, 0.65, 1.0);
+            g.add(lf);
+          });
+          g.add(pot, stem);
+          g.position.set(x, y, z);
+          this.floorGroups[floor].add(g);
+        };
+
+        const makeArt = (floor, x, y, z, rotY = 0, w = 2.6, h = 1.9) => {
+          const g = new THREE.Group();
+          const frame = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.12), this.styleMats.woodDark);
+          const canvas = new THREE.Mesh(new THREE.BoxGeometry(w - 0.24, h - 0.24, 0.14), this.styleMats.artA);
+          const accent = new THREE.Mesh(new THREE.BoxGeometry(w * 0.45, h * 0.45, 0.15), this.styleMats.artB);
+          accent.position.set(w * 0.12, 0.08, 0.01);
+          g.add(frame, canvas, accent);
+          g.position.set(x, y, z);
+          g.rotation.y = rotY;
+          this.floorGroups[floor].add(g);
+        };
+
+        const makeLamp = (floor, x, y, z, tall = false) => {
+          const g = new THREE.Group();
+          const h = tall ? 4.8 : 1.3;
+          const base = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.48, 0.14, 12), this.styleMats.metal);
+          base.position.y = 0.07;
+          const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, h, 8), this.styleMats.metal);
+          pole.position.y = h / 2 + 0.1;
+          const shade = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.68, 0.95, 14), this.styleMats.lampShade);
+          shade.position.y = h + 0.4;
+          g.add(base, pole, shade);
+          g.position.set(x, y, z);
+          this.floorGroups[floor].add(g);
+          addBulbLight(floor, x, y + h + 0.35, z, 14, 18);
+        };
+
+        const makeBed = (floor, x, y, z, rotY = 0, king = true) => {
+          const g = new THREE.Group();
+          const w = king ? 6.4 : 5.2;
+          const d = 6.8;
+          const frame = new THREE.Mesh(new THREE.BoxGeometry(w + 0.25, 0.85, d + 0.25), this.styleMats.wood);
+          frame.position.y = 0.425;
+          const hb = new THREE.Mesh(new THREE.BoxGeometry(w + 0.35, 3.6, 0.35), this.styleMats.fabricAccent);
+          hb.position.set(0, 1.9, -d / 2);
+          const mattress = new THREE.Mesh(new THREE.BoxGeometry(w, 0.95, d - 0.2), this.porcelainMat);
+          mattress.position.set(0, 1.32, 0.05);
+          const duvet = new THREE.Mesh(new THREE.BoxGeometry(w + 0.08, 0.32, d * 0.65), this.styleMats.fabricMain);
+          duvet.position.set(0, 1.72, d * 0.16);
+          const throwB = new THREE.Mesh(new THREE.BoxGeometry(w + 0.12, 0.36, 1.5), this.styleMats.fabricAccent);
+          throwB.position.set(0, 1.74, d * 0.32);
+          g.add(frame, hb, mattress, duvet, throwB);
+          [-w * 0.26, w * 0.26].forEach((px) => {
+            const pil = new THREE.Mesh(new THREE.BoxGeometry(w * 0.38, 0.35, 1.15), this.styleMats.fabricAccent);
+            pil.position.set(px, 1.92, -d * 0.33);
+            g.add(pil);
+          });
+          g.position.set(x, y, z);
+          g.rotation.y = rotY;
+          this.floorGroups[floor].add(g);
+        };
+
+        const makeCeilingFan = (floor, x, y, z) => {
+          const fan = new THREE.Group();
+          const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 0.22, 12), this.styleMats.metal);
+          const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.7, 8), this.styleMats.metal);
+          rod.position.y = 0.25;
+          const lightMat = new THREE.MeshStandardMaterial({ color: 0xfffbeb, emissive: 0xfde68a, emissiveIntensity: 0.1 });
+          this.bulbMats.push(lightMat);
+          const kit = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.36, 0.15, 12), lightMat);
+          kit.position.y = -0.15;
+          fan.add(hub, rod, kit);
+          for (let i = 0; i < 5; i++) {
+            const a = (i * Math.PI * 2) / 5;
+            const bl = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.05, 0.42), this.styleMats.wood);
+            bl.position.set(Math.cos(a) * 1.3, 0, Math.sin(a) * 1.3);
+            bl.rotation.y = -a;
+            fan.add(bl);
+          }
+          fan.position.set(x, y, z);
+          this.floorGroups[floor].add(fan);
+          this.fans.push(fan);
+        };
+
+        const makeToilet = (floor, x, z) => {
+          const g = new THREE.Group();
+          const bowl = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.48, 1.35, 12), this.porcelainMat);
+          bowl.position.set(0, 0.68, 0.35);
+          const tank = new THREE.Mesh(new THREE.BoxGeometry(1.35, 1.35, 0.65), this.porcelainMat);
+          tank.position.set(0, 1.85, -0.3);
+          g.add(bowl, tank);
+          g.position.set(x, 0.35, z);
+          this.floorGroups[floor].add(g);
+        };
+
+        // ================= MAIN FLOOR =================
+        // Living Room: Rug, Designer Sofa, Accent Chair, Coffee Table, Media Console + TV, Floor Lamp, Plant, Art, Laundry Closet
+        const livRug = new THREE.Mesh(new THREE.BoxGeometry(10.5, 0.05, 7.6), this.styleMats.rug);
+        livRug.position.set(-12.5, 0.38, 6.2);
+        this.floorGroups.main.add(livRug);
+
+        const sofaGrp = new THREE.Group();
+        const sBase = new THREE.Mesh(new THREE.BoxGeometry(8.2, 1.35, 3.1), this.styleMats.fabricMain);
+        sBase.position.y = 0.72;
+        const sBack = new THREE.Mesh(new THREE.BoxGeometry(8.2, 1.45, 0.65), this.styleMats.fabricMain);
+        sBack.position.set(0, 1.65, -1.2);
+        const sArmL = new THREE.Mesh(new THREE.BoxGeometry(0.55, 1.35, 3.1), this.styleMats.fabricMain);
+        sArmL.position.set(-3.82, 1.25, 0);
+        const sArmR = new THREE.Mesh(new THREE.BoxGeometry(0.55, 1.35, 3.1), this.styleMats.fabricMain);
+        sArmR.position.set(3.82, 1.25, 0);
+        const sChaise = new THREE.Mesh(new THREE.BoxGeometry(2.8, 1.35, 5.4), this.styleMats.fabricMain);
+        sChaise.position.set(-2.7, 0.72, 1.15);
+        sofaGrp.add(sBase, sBack, sArmL, sArmR, sChaise);
+        sofaGrp.position.set(-13.0, 0.35, 4.2);
+        this.floorGroups.main.add(sofaGrp);
+
+        const coffeeTbl = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.9, 2.2), this.styleMats.wood);
+        coffeeTbl.position.set(-11.8, 0.8, 7.5);
+        const mediaCons = new THREE.Mesh(new THREE.BoxGeometry(6.2, 1.8, 1.4), this.styleMats.woodDark);
+        mediaCons.position.set(-13.4, 1.25, 10.6);
+        const tvScreen = new THREE.Mesh(new THREE.BoxGeometry(4.8, 2.7, 0.14), new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.15, metalness: 0.4 }));
+        tvScreen.position.set(-13.4, 3.8, 10.8);
+        this.floorGroups.main.add(coffeeTbl, mediaCons, tvScreen);
+
+        makeLamp("main", -19.2, 0.35, 3.2, true);
+        makePlant("main", -19.5, 0.35, 9.8, 1.15);
+        makeArt("main", -20.9, 4.6, 8.2, Math.PI / 2, 2.4, 2.8);
+        makeCeilingFan("main", -11.0, 7.6, 5.8);
+        addBulbLight("main", -11.0, 7.2, 5.8, 22, 26);
+        makeRecessedLight("main", -17.5, 7.9, 3.0, 14);
+        makeRecessedLight("main", -5.5, 7.9, 3.0, 14);
+
+        // Finished Laundry Closet
+        const laundryWall = new THREE.Mesh(new THREE.BoxGeometry(3.8, 7.5, 0.35), this.styleMats.wall);
+        laundryWall.position.set(-2.0, 4.1, 8.8);
+        const washer = new THREE.Mesh(new THREE.BoxGeometry(2.3, 3.2, 2.3), this.porcelainMat);
+        washer.position.set(-2.0, 1.95, 10.2);
+        this.floorGroups.main.add(laundryWall, washer);
+        this.wallMeshesForCam.push(laundryWall);
+        this.wallColliders.push({ floor: "main", minX: -3.9, maxX: -0.1, minZ: 8.6, maxZ: 9.0, minY: 6.15, maxY: 13.6 });
+
+        // Dining Room: Rug + 6-Seat Dining Table + Chandelier
+        const dinRug = new THREE.Mesh(new THREE.BoxGeometry(8.0, 0.05, 8.2), this.styleMats.rug);
+        dinRug.position.set(-16.0, 0.38, -5.5);
+        const dinTbl = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.22, 6.2), this.styleMats.wood);
+        dinTbl.position.set(-16.0, 2.55, -5.5);
+        const dinLeg1 = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.1, 0.35), this.styleMats.metal);
+        dinLeg1.position.set(-16.0, 1.4, -7.5);
+        const dinLeg2 = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.1, 0.35), this.styleMats.metal);
+        dinLeg2.position.set(-16.0, 1.4, -3.5);
+        const vase = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.35, 0.85, 12), this.styleMats.stone);
+        vase.position.set(-16.0, 3.05, -5.5);
+        this.floorGroups.main.add(dinRug, dinTbl, dinLeg1, dinLeg2, vase);
+
+        [
+          [-18.3, -7.2, Math.PI / 2], [-18.3, -5.5, Math.PI / 2], [-18.3, -3.8, Math.PI / 2],
+          [-13.7, -7.2, -Math.PI / 2], [-13.7, -5.5, -Math.PI / 2], [-13.7, -3.8, -Math.PI / 2],
+        ].forEach(([cx, cz, ry]) => {
+          const ch = new THREE.Group();
+          const seat = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.2, 1.4), this.styleMats.fabricAccent);
+          seat.position.y = 1.5;
+          const back = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.5, 0.2), this.styleMats.fabricAccent);
+          back.position.set(0, 2.3, -0.6);
+          const legs = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.3, 1.2), this.styleMats.metal);
+          legs.position.y = 0.85;
+          ch.add(seat, back, legs);
+          ch.position.set(cx, 0.35, cz);
+          ch.rotation.y = ry;
+          this.floorGroups.main.add(ch);
+        });
+        // Set 6-seat dining table place settings (placemats + white ceramic dinner plates)
+        [
+          [-17.1, -7.2], [-17.1, -5.5], [-17.1, -3.8],
+          [-14.9, -7.2], [-14.9, -5.5], [-14.9, -3.8],
+        ].forEach(([px, pz]) => {
+          const mat = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.02, 1.15), this.styleMats.fabricAccent);
+          mat.position.set(px, 2.67, pz);
+          const plate = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.3, 0.05, 14), this.porcelainMat);
+          plate.position.set(px, 2.7, pz);
+          this.floorGroups.main.add(mat, plate);
+        });
+
+        // Modern Linear Chandelier
+        const chanBar = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.12, 3.6), this.styleMats.metal);
+        chanBar.position.set(-16.0, 6.4, -5.5);
+        this.floorGroups.main.add(chanBar);
+        [-6.9, -5.5, -4.1].forEach((bz) => {
+          const bMat = new THREE.MeshStandardMaterial({ color: 0xfffbeb, emissive: 0xfde68a, emissiveIntensity: 0.2 });
+          this.bulbMats.push(bMat);
+          const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.24, 12, 10), bMat);
+          bulb.position.set(-16.0, 6.22, bz);
+          this.floorGroups.main.add(bulb);
+        });
+        addBulbLight("main", -16.0, 6.2, -5.5, 22, 22);
+
+        // Kitchen: White Shaker Cabinets, Granite, Deep Single Sink, Range, Microwave, SS Fridge
+        const kBaseN = new THREE.Mesh(new THREE.BoxGeometry(7.2, 3.0, 2.1), this.styleMats.cabinet);
+        kBaseN.position.set(-6.5, 1.85, -9.85);
+        const kTopN = new THREE.Mesh(new THREE.BoxGeometry(7.35, 0.2, 2.25), this.graniteMat);
+        kTopN.position.set(-6.5, 3.42, -9.85);
+        const kSink = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.16, 1.45), this.stainlessMat);
+        kSink.position.set(-6.8, 3.5, -9.85);
+        const kFaucet = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.0, 8), this.chromeMat);
+        kFaucet.position.set(-6.8, 4.0, -10.35);
+        const kBaseE = new THREE.Mesh(new THREE.BoxGeometry(2.1, 3.0, 3.8), this.styleMats.cabinet);
+        kBaseE.position.set(-1.25, 1.85, -8.5);
+        const kTopE = new THREE.Mesh(new THREE.BoxGeometry(2.25, 0.2, 3.95), this.graniteMat);
+        kTopE.position.set(-1.25, 3.42, -8.5);
+        const kUpperE = new THREE.Mesh(new THREE.BoxGeometry(1.3, 2.3, 6.2), this.styleMats.cabinet);
+        kUpperE.position.set(-0.85, 6.2, -7.2);
+        const kRange = new THREE.Mesh(new THREE.BoxGeometry(2.5, 3.1, 2.4), this.stainlessMat);
+        kRange.position.set(-1.35, 1.9, -5.2);
+        const kMicro = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.45, 2.4), this.stainlessMat);
+        kMicro.position.set(-0.9, 5.65, -5.2);
+        const kFridge = new THREE.Mesh(new THREE.BoxGeometry(2.7, 5.9, 2.9), this.stainlessMat);
+        kFridge.position.set(-1.45, 3.3, -2.2);
+        this.floorGroups.main.add(kBaseN, kTopN, kSink, kFaucet, kBaseE, kTopE, kUpperE, kRange, kMicro, kFridge);
+        makeRecessedLight("main", -6.0, 7.9, -6.0, 18);
+        makeRecessedLight("main", -6.0, 7.9, -2.5, 14);
+
+        // Rear Deck Outdoor Patio Seating
+        const deckSofa = new THREE.Mesh(new THREE.BoxGeometry(6.0, 1.4, 2.6), this.styleMats.fabricMain);
+        deckSofa.position.set(-9.5, 1.05, -23.5);
+        const deckChair = new THREE.Mesh(new THREE.BoxGeometry(2.6, 1.4, 2.6), this.styleMats.fabricAccent);
+        deckChair.position.set(-4.5, 1.05, -20.5);
+        const deckTbl = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.9, 1.8), this.styleMats.woodDark);
+        deckTbl.position.set(-9.5, 0.8, -19.8);
+        this.floorGroups.main.add(deckSofa, deckChair, deckTbl);
+        makePlant("main", -1.5, 0.35, -25.0, 0.95);
+
+        // ================= UPSTAIRS =================
+        // Primary Bedroom: New Closed Reach-In Closet (Solid TV wall Left + Open Closet Archway Right, No Doors) + King Bed + Nightstands + Art + Plant
+        const priClosetWallL = new THREE.Mesh(new THREE.BoxGeometry(5.8, 7.8, 0.35), this.styleMats.wall);
+        priClosetWallL.position.set(16.75, 4.25, 0.9);
+        const priClosetWallR = new THREE.Mesh(new THREE.BoxGeometry(0.75, 7.8, 0.35), this.styleMats.wall);
+        priClosetWallR.position.set(23.75, 4.25, 0.9);
+        const priClosetHeader = new THREE.Mesh(new THREE.BoxGeometry(4.0, 1.1, 0.35), this.styleMats.wall);
+        priClosetHeader.position.set(21.55, 7.6, 0.9);
+        const priClosetSide = new THREE.Mesh(new THREE.BoxGeometry(0.35, 7.8, 2.55), this.styleMats.wall);
+        priClosetSide.position.set(13.9, 4.25, 2.1);
+        const priRug = new THREE.Mesh(new THREE.BoxGeometry(9.2, 0.05, 8.2), this.styleMats.rug);
+        priRug.position.set(16.8, 0.38, -5.2);
+        const priTv = new THREE.Mesh(new THREE.BoxGeometry(4.4, 2.5, 0.14), new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.15 }));
+        priTv.position.set(16.8, 4.7, 0.62); // Mounted cleanly on the dedicated solid TV wall left of the closet opening!
+        this.floorGroups.upstairs.add(priClosetWallL, priClosetWallR, priClosetHeader, priClosetSide, priRug, priTv);
+        this.wallMeshesForCam.push(priClosetWallL, priClosetWallR, priClosetSide);
+        this.wallColliders.push(
+          { floor: "upstairs", minX: 13.85, maxX: 19.65, minZ: 0.72, maxZ: 1.08, minY: 9.35, maxY: 17.15 },
+          { floor: "upstairs", minX: 23.35, maxX: 24.15, minZ: 0.72, maxZ: 1.08, minY: 9.35, maxY: 17.15 },
+          { floor: "upstairs", minX: 13.7, maxX: 14.1, minZ: 0.82, maxZ: 3.38, minY: 9.35, maxY: 17.15 }
+        );
+
+        makeBed("upstairs", 16.8, 0.35, -6.5, 0, true);
+        // 2 Nightstands + Table Lamps
+        [12.7, 20.9].forEach((nx) => {
+          const ns = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.8, 1.5), this.styleMats.wood);
+          ns.position.set(nx, 1.25, -9.0);
+          this.floorGroups.upstairs.add(ns);
+          makeLamp("upstairs", nx, 2.15, -9.0, false);
+        });
+        makePlant("upstairs", 22.8, 0.35, -8.8, 1.05);
+        makeArt("upstairs", 16.8, 5.2, -9.95, 0, 3.4, 1.8);
+        makeCeilingFan("upstairs", 16.4, 7.7, -3.5);
+        addBulbLight("upstairs", 16.4, 7.2, -3.5, 20, 24);
+        makeRecessedLight("upstairs", 6.0, 8.0, 5.0, 12); // Upstairs Hallway recessed light
+
+        // Primary Bathroom: Extended Ceramic Shower (ends at X = 5.7, left edge of X = 5.9..7.7 window) + Double Vanity + Mirror + Toilet
+        const pShowerTile = new THREE.Mesh(new THREE.BoxGeometry(5.3, 0.28, 3.9), this.bathTileMat);
+        pShowerTile.position.set(3.05, 0.48, -8.15);
+        const pGlassF = new THREE.Mesh(new THREE.BoxGeometry(2.8, 6.8, 0.08), this.showerGlassMat);
+        pGlassF.position.set(1.8, 4.1, -6.25);
+        const pGlassD = new THREE.Mesh(new THREE.BoxGeometry(2.4, 6.8, 0.08), this.showerGlassMat);
+        pGlassD.position.set(4.25, 4.1, -5.7);
+        pGlassD.rotation.y = 0.52;
+        const pGlassS = new THREE.Mesh(new THREE.BoxGeometry(0.08, 6.8, 3.8), this.showerGlassMat);
+        pGlassS.position.set(5.7, 4.1, -8.15);
+        const pVanity = new THREE.Mesh(new THREE.BoxGeometry(5.0, 2.8, 1.8), this.styleMats.woodDark);
+        pVanity.position.set(5.1, 1.75, -2.75);
+        const pTop = new THREE.Mesh(new THREE.BoxGeometry(5.1, 0.16, 1.9), this.styleMats.stone);
+        pTop.position.set(5.1, 3.2, -2.75);
+        const pMirror = new THREE.Mesh(new THREE.BoxGeometry(4.6, 3.0, 0.12), new THREE.MeshStandardMaterial({ color: 0xe0f2fe, metalness: 0.9, roughness: 0.08 }));
+        pMirror.position.set(5.1, 5.2, -1.9);
+        this.floorGroups.upstairs.add(pShowerTile, pGlassF, pGlassD, pGlassS, pVanity, pTop, pMirror);
+        makeToilet("upstairs", 1.5, -2.55);
+        makeRecessedLight("upstairs", 4.5, 8.0, -5.5, 16);
+
+        // Upstairs Hall Bath: New Vanity + Glass Sliding Shower Door + Toilet
+        const hVanity = new THREE.Mesh(new THREE.BoxGeometry(2.8, 2.8, 1.7), this.styleMats.cabinet);
+        hVanity.position.set(6.4, 1.75, -0.7);
+        const hTop = new THREE.Mesh(new THREE.BoxGeometry(2.9, 0.16, 1.8), this.styleMats.stone);
+        hTop.position.set(6.4, 3.2, -0.7);
+        const hGlass1 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 6.7, 2.35), this.showerGlassMat);
+        hGlass1.position.set(2.86, 3.85, -0.25);
+        const hGlass2 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 6.7, 2.35), this.showerGlassMat);
+        hGlass2.position.set(2.94, 3.85, 1.85);
+        this.floorGroups.upstairs.add(hVanity, hTop, hGlass1, hGlass2);
+        makeToilet("upstairs", 4.2, -0.7);
+        makeRecessedLight("upstairs", 4.5, 8.0, 1.0, 14);
+
+        // Upstairs Bedrooms 2 & 3: Beds, Nightstands, Lamps, Rugs, Art, Matching Modern Ceiling Fans
+        makeBed("upstairs", 6.0, 0.35, 11.4, Math.PI, false);
+        const ns2 = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.8, 1.5), this.styleMats.wood);
+        ns2.position.set(9.6, 1.25, 14.0);
+        this.floorGroups.upstairs.add(ns2);
+        makeLamp("upstairs", 9.6, 2.15, 14.0, false);
+        makeArt("upstairs", 6.0, 5.0, 15.2, Math.PI, 2.6, 1.7);
+        makeCeilingFan("upstairs", 6.0, 7.7, 11.0);
+        addBulbLight("upstairs", 6.0, 7.2, 11.0, 18, 20);
+
+        makeBed("upstairs", 18.5, 0.35, 9.8, -Math.PI / 2, false);
+        const ns3 = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.8, 1.5), this.styleMats.wood);
+        ns3.position.set(22.6, 1.25, 6.2);
+        this.floorGroups.upstairs.add(ns3);
+        makeLamp("upstairs", 22.6, 2.15, 6.2, false);
+        makeArt("upstairs", 18.5, 5.0, 3.8, 0, 2.8, 1.8);
+        makeCeilingFan("upstairs", 18.5, 7.7, 9.8);
+        addBulbLight("upstairs", 18.5, 7.2, 9.8, 18, 20);
+
+        // ================= GARAGE CONVERSION / IN-LAW SUITE =================
+        // In-Law Living Room (#12): TV & Media Console on Right (East) wall under HVAC Mini-Split, Couches + Coffee Table + Rug facing East
+        const gRug = new THREE.Mesh(new THREE.BoxGeometry(8.6, 0.05, 8.2), this.styleMats.rug);
+        gRug.position.set(17.2, 0.38, -1.5);
+
+        const gSofa = new THREE.Group();
+        const gSofaBase = new THREE.Mesh(new THREE.BoxGeometry(2.8, 1.35, 7.0), this.styleMats.fabricMain);
+        gSofaBase.position.set(14.2, 1.02, -1.5);
+        const gSofaBack = new THREE.Mesh(new THREE.BoxGeometry(0.55, 1.25, 7.0), this.styleMats.fabricAccent);
+        gSofaBack.position.set(13.08, 1.95, -1.5);
+        const gSofaArmL = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.8, 0.45), this.styleMats.fabricAccent);
+        gSofaArmL.position.set(14.2, 1.65, -4.8);
+        const gSofaArmR = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.8, 0.45), this.styleMats.fabricAccent);
+        gSofaArmR.position.set(14.2, 1.65, 1.8);
+        gSofa.add(gSofaBase, gSofaBack, gSofaArmL, gSofaArmR);
+
+        const gSofa2 = new THREE.Group();
+        const gSofa2Base = new THREE.Mesh(new THREE.BoxGeometry(4.6, 1.35, 2.5), this.styleMats.fabricMain);
+        gSofa2Base.position.set(18.2, 1.02, -5.5);
+        const gSofa2Back = new THREE.Mesh(new THREE.BoxGeometry(4.6, 1.25, 0.5), this.styleMats.fabricAccent);
+        gSofa2Back.position.set(18.2, 1.95, -6.5);
+        gSofa2.add(gSofa2Base, gSofa2Back);
+
+        const gCoffee = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.85, 3.8), this.styleMats.wood);
+        gCoffee.position.set(18.2, 0.78, -1.5);
+        const gCons = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.5, 5.2), this.styleMats.woodDark);
+        gCons.position.set(23.35, 1.1, -1.5);
+        const gTv = new THREE.Mesh(new THREE.BoxGeometry(0.14, 2.3, 4.2), new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.15 }));
+        gTv.position.set(23.95, 3.6, -1.5);
+        // Ductless Mini-Split Indoor Head on East wall above TV
+        const msHead = new THREE.Mesh(new THREE.BoxGeometry(0.75, 1.05, 3.4), this.porcelainMat);
+        msHead.position.set(23.75, 6.8, -1.5);
+        this.floorGroups.garage.add(gRug, gSofa, gSofa2, gCoffee, gCons, gTv, msHead);
+
+        makeLamp("garage", 12.6, 0.35, 2.6, true);
+        makePlant("garage", 22.8, 0.35, -8.8, 1.0);
+        makeArt("garage", 10.92, 4.9, -7.8, Math.PI / 2, 2.8, 1.8);
+        makeCeilingFan("garage", 16.5, 7.6, -1.0);
+        addBulbLight("garage", 16.5, 7.2, -1.0, 20, 24);
+        makeRecessedLight("garage", 13.5, 7.9, -7.8, 14);
+        makeRecessedLight("garage", 20.5, 7.9, -7.8, 14);
+        makeRecessedLight("garage", 8.5, 7.9, 1.2, 12);
+        makeRecessedLight("garage", 21.5, 7.9, -2.0, 12);
+
+        // Front-Right Open Kitchenette (#10) — Clean Kitchenette without Bistro Table
+        const k2Base = new THREE.Mesh(new THREE.BoxGeometry(2.1, 3.0, 6.6), this.styleMats.cabinet);
+        k2Base.position.set(23.0, 1.85, 11.4);
+        const k2Top = new THREE.Mesh(new THREE.BoxGeometry(2.25, 0.2, 6.75), this.graniteMat);
+        k2Top.position.set(23.0, 3.42, 11.4);
+        const k2Upper = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2.2, 2.6), this.styleMats.cabinet);
+        k2Upper.position.set(23.4, 6.1, 13.9);
+        const k2Sink = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.14, 1.8), this.stainlessMat);
+        k2Sink.position.set(23.0, 3.5, 10.6);
+        const k2Appliance = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.0, 1.8), this.stainlessMat);
+        k2Appliance.position.set(23.0, 4.02, 13.6);
+        const k2Fridge = new THREE.Mesh(new THREE.BoxGeometry(2.5, 5.4, 2.5), this.stainlessMat);
+        k2Fridge.position.set(22.8, 3.05, 6.9);
+        this.floorGroups.garage.add(k2Base, k2Top, k2Upper, k2Sink, k2Appliance, k2Fridge);
+        makeRecessedLight("garage", 19.0, 7.9, 10.5, 18);
+
+        // Front-Left Conforming Bedroom (#11) + New Framed Closet System (Open Walkthrough, No Doors)
+        const lcWall = new THREE.Mesh(new THREE.BoxGeometry(0.35, 7.7, 2.4), this.styleMats.wall);
+        lcWall.position.set(5.2, 4.2, 6.9);
+        const lcFrontL = new THREE.Mesh(new THREE.BoxGeometry(0.9, 7.7, 0.35), this.styleMats.wall);
+        lcFrontL.position.set(0.85, 4.2, 8.0);
+        const lcFrontR = new THREE.Mesh(new THREE.BoxGeometry(0.9, 7.7, 0.35), this.styleMats.wall);
+        lcFrontR.position.set(4.75, 4.2, 8.0);
+        const lcHeader = new THREE.Mesh(new THREE.BoxGeometry(3.6, 1.0, 0.35), this.styleMats.wall);
+        lcHeader.position.set(2.8, 7.55, 8.0);
+        this.floorGroups.garage.add(lcWall, lcFrontL, lcFrontR, lcHeader);
+        this.wallMeshesForCam.push(lcWall, lcFrontL, lcFrontR);
+        this.wallColliders.push(
+          { floor: "garage", minX: 5.0, maxX: 5.4, minZ: 5.7, maxZ: 8.1, minY: 0.75, maxY: 8.45 },
+          { floor: "garage", minX: 0.4, maxX: 1.3, minZ: 7.8, maxZ: 8.2, minY: 0.75, maxY: 8.45 },
+          { floor: "garage", minX: 4.3, maxX: 5.2, minZ: 7.8, maxZ: 8.2, minY: 0.75, maxY: 8.45 }
+        );
+        makeBed("garage", 10.0, 0.35, 11.4, -Math.PI / 2, false);
+        const nsL = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.7, 1.4), this.styleMats.wood);
+        nsL.position.set(12.6, 1.2, 14.8);
+        this.floorGroups.garage.add(nsL);
+        makeLamp("garage", 12.6, 2.05, 14.8, false);
+        makeArt("garage", 8.5, 4.9, 5.9, 0, 2.4, 1.6);
+        makeRecessedLight("garage", 8.0, 7.9, 11.0, 16);
+
+        // Lower Bath (#9): Boxed Plumbing Chase, Glass Shower Enclosure, Vanity, Toilet
+        const gChase = new THREE.Mesh(new THREE.BoxGeometry(2.5, 7.6, 0.85), this.styleMats.wall);
+        gChase.position.set(5.35, 4.1, -9.75);
+        const gGlass = new THREE.Mesh(new THREE.BoxGeometry(0.08, 6.8, 4.6), this.showerGlassMat);
+        gGlass.position.set(3.45, 3.9, -7.8);
+        const gVan = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.8, 1.65), this.styleMats.cabinet);
+        gVan.position.set(9.0, 1.75, -9.3);
+        const gTop = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.16, 1.75), this.styleMats.stone);
+        gTop.position.set(9.0, 3.2, -9.3);
+        this.floorGroups.garage.add(gChase, gGlass, gVan, gTop);
+        makeToilet("garage", 5.4, -9.0);
+        makeRecessedLight("garage", 6.0, 7.9, -7.5, 14);
+      }
+
+      applyStyle(key) {
+        this.styleKey = key;
+        const st = STYLES[key] || STYLES.scandi;
+        this.styleMats.wood.color.setHex(st.woodHex);
+        this.styleMats.woodDark.color.setHex(st.woodDarkHex);
+        this.styleMats.fabricMain.color.setHex(st.fabricMainHex);
+        this.styleMats.fabricAccent.color.setHex(st.fabricAccentHex);
+        this.styleMats.rug.color.setHex(st.rugHex);
+        this.styleMats.metal.color.setHex(st.metalHex);
+        this.styleMats.stone.color.setHex(st.stoneHex);
+        this.styleMats.wall.color.setHex(st.wallHex);
+        this.styleMats.artA.color.setHex(st.artHexA);
+        this.styleMats.artB.color.setHex(st.artHexB);
+        this.styleMats.lampShade.color.setHex(st.lampShadeHex);
+        this.styleMats.plantPot.color.setHex(st.plantPotHex);
+        this.styleMats.cabinet.color.setHex(st.cabinetHex);
+
+        document.querySelectorAll("#style-switcher .choice-btn").forEach((b) => {
+          b.classList.toggle("active", b.dataset.style === key);
+        });
+      }
+
+      setTimeOfDay(val0100) {
+        const v = Number(val0100);
+        // 0 = 7 AM Morning, 35 = 12 PM Midday, 74 = 6:30 PM Sunset, 100 = 9:30 PM Night
+        const labelEl = document.getElementById("tod-label");
+        let label = "12:00 PM Midday";
+        if (v < 20) label = "7:00 AM Morning";
+        else if (v < 52) label = "12:00 PM Midday";
+        else if (v < 86) label = "6:30 PM Golden Sunset";
+        else label = "9:30 PM Night";
+        if (labelEl) labelEl.textContent = label;
+
+        document.querySelectorAll(".tod-pill").forEach((p) => {
+          p.classList.toggle("active", Math.abs(Number(p.dataset.tod) - v) <= 12);
+        });
+
+        const t = v / 100;
+        // East (0.12*PI) -> High Noon (0.5*PI) -> Low Golden Sunset (0.91*PI) -> Night Moonlight
+        const skyC = new THREE.Color();
+        const sunC = new THREE.Color();
+        let nightMix = 0;
+
+        if (t < 0.35) {
+          const k = t / 0.35;
+          const sunAngle = (0.12 + k * 0.35) * Math.PI;
+          this.sunLight.position.set(Math.cos(sunAngle) * 76, Math.sin(sunAngle) * 76, 24 + k * 14);
+          skyC.lerpColors(new THREE.Color(0xfdba74), new THREE.Color(0x93c5fd), k);
+          sunC.lerpColors(new THREE.Color(0xffedd5), new THREE.Color(0xfffbeb), k);
+          this.sunLight.intensity = 1.45 + k * 0.5;
+          this.hemiLight.intensity = 0.78 + k * 0.22;
+        } else if (t < 0.75) {
+          const k = (t - 0.35) / 0.4;
+          const sunAngle = (0.47 + k * 0.43) * Math.PI;
+          this.sunLight.position.set(Math.cos(sunAngle) * 76, Math.max(16, Math.sin(sunAngle) * 76), 38 - k * 16);
+          skyC.lerpColors(new THREE.Color(0x93c5fd), new THREE.Color(0xf97316), k);
+          sunC.lerpColors(new THREE.Color(0xfffbeb), new THREE.Color(0xfb923c), k);
+          this.sunLight.intensity = 1.95 - k * 0.5;
+          this.hemiLight.intensity = 1.0 - k * 0.4;
+          nightMix = k * 0.65;
+        } else {
+          const k = (t - 0.75) / 0.25;
+          this.sunLight.position.set(-72 + k * 40, 18 + k * 26, 22 + k * 6);
+          skyC.lerpColors(new THREE.Color(0xf97316), new THREE.Color(0x090d1a), k);
+          sunC.lerpColors(new THREE.Color(0xfb923c), new THREE.Color(0x64748b), k);
+          this.sunLight.intensity = 1.45 - k * 1.1;
+          this.hemiLight.intensity = 0.6 - k * 0.35;
+          nightMix = 0.65 + k * 0.35;
+        }
+
+        this.scene.background.copy(skyC);
+        this.scene.fog.color.copy(skyC);
+        this.sunLight.color.copy(sunC);
+
+        // Turn on interior lamps, recessed ceiling lights & exterior sconces at sunset & night
+        this.lampLights.forEach((entry) => {
+          entry.light.intensity = entry.max * nightMix;
+        });
+        this.bulbMats.forEach((m) => {
+          m.emissiveIntensity = 0.1 + nightMix * 1.4;
+        });
+        this.styleMats.lampShade.emissiveIntensity = 0.05 + nightMix * 0.9;
+      }
+
+      _buildAvatar() {
+        this.avatarGroup = new THREE.Group();
+        const skinMat = new THREE.MeshStandardMaterial({ color: 0xe8be9e, roughness: 0.6 });
+        const hairMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.8 });
+        const suitMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.65 });
+        const shirtMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.45 });
+        const pantsMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.72 });
+        const shoeMat = new THREE.MeshStandardMaterial({ color: 0x1c1917, roughness: 0.4 });
+
+        // Soft ground contact shadow disc
+        const shadowDisc = new THREE.Mesh(
+          new THREE.CircleGeometry(0.82, 18),
+          new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.28, depthWrite: false })
+        );
+        shadowDisc.rotation.x = -Math.PI / 2;
+        shadowDisc.position.y = 0.04;
+        this.avatarGroup.add(shadowDisc);
+
+        // Articulated Legs (hip pivot at y = 2.7)
+        const makeLeg = (xOff) => {
+          const piv = new THREE.Group();
+          piv.position.set(xOff, 2.7, 0);
+          const leg = new THREE.Mesh(new THREE.BoxGeometry(0.44, 2.4, 0.46), pantsMat);
+          leg.position.y = -1.2;
+          leg.castShadow = true;
+          const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.28, 0.74), shoeMat);
+          shoe.position.set(0, -2.54, 0.12);
+          shoe.castShadow = true;
+          piv.add(leg, shoe);
+          return piv;
+        };
+        this.legL = makeLeg(-0.28);
+        this.legR = makeLeg(0.28);
+        this.avatarGroup.add(this.legL, this.legR);
+
+        // Tailored Jacket Torso + Front Chest Shirt Insert Only (solid navy back)
+        const torso = new THREE.Mesh(new THREE.BoxGeometry(1.18, 1.85, 0.62), suitMat);
+        torso.position.y = 3.62;
+        torso.castShadow = true;
+        const shirt = new THREE.Mesh(new THREE.BoxGeometry(0.42, 1.45, 0.08), shirtMat);
+        shirt.position.set(0, 3.68, 0.29);
+        this.avatarGroup.add(torso, shirt);
+
+        // Articulated Arms (shoulder pivot at y = 4.4)
+        const makeArm = (xOff) => {
+          const piv = new THREE.Group();
+          piv.position.set(xOff, 4.4, 0);
+          const sleeve = new THREE.Mesh(new THREE.BoxGeometry(0.32, 1.65, 0.34), suitMat);
+          sleeve.position.y = -0.82;
+          sleeve.castShadow = true;
+          const hand = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 8), skinMat);
+          hand.position.y = -1.72;
+          piv.add(sleeve, hand);
+          return piv;
+        };
+        this.armL = makeArm(-0.76);
+        this.armR = makeArm(0.76);
+        this.avatarGroup.add(this.armL, this.armR);
+
+        // Neck, Head & Hair
+        const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.3, 10), skinMat);
+        neck.position.y = 4.68;
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.42, 14, 12), skinMat);
+        head.position.y = 5.12;
+        head.castShadow = true;
+        const hair = new THREE.Mesh(new THREE.SphereGeometry(0.44, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.56), hairMat);
+        hair.position.set(0, 5.16, -0.04);
+        hair.rotation.x = -0.18;
+        this.avatarGroup.add(neck, head, hair);
+
+        this.avatarGroup.visible = false;
+        this.scene.add(this.avatarGroup);
+      }
+
+      _setLensFov(fov) {
+        if (Math.abs(this.camera.fov - fov) > 0.1) {
+          this.camera.fov = fov;
+          this.camera.updateProjectionMatrix();
+        }
+      }
+
+      _resolveFloorAndStairHeight(x, z, curY) {
+        const clamp01 = (v) => Math.max(0, Math.min(1, v));
+
+        // 1. Front Entry Steps: x [-6.1..-0.7], z [11.5..16.9] (0.0 -> 6.15)
+        if (x >= -6.1 && x <= -0.7 && z >= 11.5 && z <= 16.9) {
+          const t = clamp01((16.5 - z) / (16.5 - 11.7));
+          return t * 6.15;
+        }
+        // 2. Rear Deck Stairs: x [-18.7..-14.3], z [-35.6..-27.0] (0.0 -> 6.15)
+        if (x >= -18.7 && x <= -14.3 && z >= -35.6 && z <= -27.0) {
+          const t = clamp01((z - -34.8) / (-27.2 - -34.8));
+          return t * 6.15;
+        }
+        // 3. Main Floor <-> Upstairs Split-Level Stairs: x [-2.6..0.6], z [3.5..6.4] (6.15 -> 9.35)
+        if (x >= -2.6 && x <= 0.6 && z >= 3.5 && z <= 6.4 && curY >= 5.2 && curY <= 10.6) {
+          const t = clamp01((x - -2.4) / (0.3 - -2.4));
+          return 6.15 + t * (9.35 - 6.15);
+        }
+        // 4. In-Law / Garage <-> Main Split-Level Stairs: x [0.0..3.35], z [-4.3..1.8] (0.75 -> 6.15)
+        if (x >= 0.0 && x <= 3.35 && z >= -4.3 && z <= 1.8 && curY <= 7.2) {
+          const t = clamp01((z - -3.8) / (1.6 - -3.8));
+          return 0.75 + t * (6.15 - 0.75);
+        }
+
+        // Non-stair slabs matching current elevation
+        const slabs = [
+          { minX: 0.0, maxX: 24.5, minZ: -10.5, maxZ: 15.8, y: 9.35 },    // Upstairs
+          { minX: -21.5, maxX: 0.0, minZ: -11.1, maxZ: 11.9, y: 6.15 },   // Main Living/Dining/Kitchen
+          { minX: 0.0, maxX: 3.4, minZ: 1.6, maxZ: 5.4, y: 6.15 },        // Split-foyer Mid-Landing
+          { minX: -21.5, maxX: 0.5, minZ: -27.2, maxZ: -11.1, y: 6.15 },  // Rear Deck
+          { minX: 0.0, maxX: 24.5, minZ: -10.5, maxZ: 15.8, y: 0.75 },    // Garage / In-Law Suite
+          { minX: -21.5, maxX: 0.0, minZ: -11.1, maxZ: 11.9, y: 0.35 },   // Crawl Space
+        ];
+
+        const hits = slabs.filter((s) => x >= s.minX && x <= s.maxX && z >= s.minZ && z <= s.maxZ);
+        if (hits.length === 0) return 0.0;
+
+        let bestY = hits[0].y;
+        let bestDiff = Math.abs(hits[0].y - curY);
+        for (let i = 1; i < hits.length; i++) {
+          const d = Math.abs(hits[i].y - curY);
+          if (d < bestDiff) {
+            bestDiff = d;
+            bestY = hits[i].y;
+          }
+        }
+        return bestY;
+      }
+
+      _hitsWall(x, z, y) {
+        const r = 0.48;
+        for (let i = 0; i < this.wallColliders.length; i++) {
+          const c = this.wallColliders[i];
+          // Only collide with walls whose base is on/near the player's current elevation band (prevents upper split-level walls from snagging headroom on Main/Garage stairs)
+          if (c.minY > y + 2.2 || c.maxY <= y + 0.85) continue;
+          if (x + r > c.minX && x - r < c.maxX && z + r > c.minZ && z - r < c.maxZ) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      _movePlayerWithPhysics(dx, dz, dt) {
+        const curY = this.playerPos.y;
+        let nx = this.playerPos.x;
+        let nz = this.playerPos.z;
+
+        // World yard boundary clamp
+        const nextTryX = Math.max(-45, Math.min(45, nx + dx));
+        if (!this._hitsWall(nextTryX, nz, curY)) nx = nextTryX;
+
+        const nextTryZ = Math.max(-45, Math.min(48, nz + dz));
+        if (!this._hitsWall(nx, nextTryZ, curY)) nz = nextTryZ;
+
+        this.playerPos.x = nx;
+        this.playerPos.z = nz;
+
+        const targetY = this._resolveFloorAndStairHeight(nx, nz, curY);
+        this.playerPos.y += (targetY - curY) * Math.min(1, dt * 16);
+      }
+
+      _updateWalkCamera() {
+        this._setLensFov(76); // Ultra-wide 16mm architectural lens!
+        const dir = new THREE.Vector3(
+          -Math.sin(this.walkYaw) * Math.cos(this.walkPitch),
+          Math.sin(this.walkPitch),
+          -Math.cos(this.walkYaw) * Math.cos(this.walkPitch)
+        ).normalize();
+
+        if (this.thirdPerson) {
+          this.avatarGroup.visible = true;
+          this.avatarGroup.position.copy(this.playerPos);
+          this.avatarGroup.rotation.y = this.avatarHeading;
+
+          // Over-the-shoulder GTA follow target
+          const right = new THREE.Vector3(Math.cos(this.walkYaw), 0, -Math.sin(this.walkYaw));
+          const focus = new THREE.Vector3(
+            this.playerPos.x + right.x * 0.55,
+            this.playerPos.y + 4.45,
+            this.playerPos.z + right.z * 0.55
+          );
+
+          // Anti-clip raycast from shoulder focus backward so camera pulls closer instead of going behind a wall
+          const backDir = dir.clone().negate();
+          this.cameraRaycaster.set(focus, backDir);
+          this.cameraRaycaster.far = this.followDist;
+          const hits = this.cameraRaycaster.intersectObjects(this.wallMeshesForCam, false);
+          const safeDist = hits.length > 0 ? Math.max(1.2, hits[0].distance - 0.35) : this.followDist;
+
+          const camPos = focus.clone().addScaledVector(backDir, safeDist);
+          camPos.y = Math.max(this.playerPos.y + 1.25, camPos.y);
+          this.camera.position.copy(camPos);
+          this.camera.lookAt(focus.clone().addScaledVector(dir, 8));
+        } else {
+          this.avatarGroup.visible = false;
+          const eye = new THREE.Vector3(this.playerPos.x, this.playerPos.y + 5.3, this.playerPos.z);
+          this.camera.position.copy(eye);
+          this.camera.lookAt(eye.clone().addScaledVector(dir, 10));
+        }
+      }
+
+      setRoofDollhouse(off) {
+        this.roofOff = off;
+        this.roofCeilingsGroup.visible = !off;
+        document.getElementById("btn-roof-dollhouse").classList.toggle("active", off);
+        if (off && !this.tourActive) {
+          this.setCameraDollhouse(true);
+        }
+      }
+
+      setCameraDollhouse(roofOff = false) {
+        this.walkMode = false;
+        this.controls.enabled = true;
+        this._setLensFov(54);
+        if (this.avatarGroup) this.avatarGroup.visible = false;
+        document.getElementById("btn-cam-view").style.display = "none";
+        this.roofCeilingsGroup.visible = !roofOff;
+        this.roofOff = roofOff;
+        document.getElementById("btn-roof-dollhouse").classList.toggle("active", roofOff);
+        document.getElementById("btn-walk-mode").classList.remove("active");
+        const wh = document.getElementById("walk-hint");
+        if (wh) wh.innerHTML = "<strong>Dollhouse Orbit:</strong> Left-drag orbit • Right-drag pan • Scroll zoom • Click <strong>🚶 GTA Walk (16mm)</strong> for 3rd-person walkthrough w/ wall &amp; stair physics";
+        this.camera.position.set(36, 34, 42);
+        this.controls.target.set(2, 6, 0);
+        this.controls.update();
+      }
+
+      setLevel(level) {
+        this.stopGuidedTour();
+        document.querySelectorAll("[data-level]").forEach((b) => {
+          b.classList.toggle("active", b.dataset.level === level);
+        });
+        if (level === "all") {
+          Object.keys(this.floorGroups).forEach((k) => (this.floorGroups[k].visible = true));
+          this.exteriorGroup.visible = true;
+          this.setCameraDollhouse(this.roofOff);
+          return;
+        }
+        Object.keys(this.floorGroups).forEach((k) => {
+          this.floorGroups[k].visible = k === level;
+        });
+        this.exteriorGroup.visible = false;
+        this.setRoofDollhouse(true);
+        const targets = {
+          upstairs: { pos: [26, 27, 26], look: [12, 11, 2] },
+          main: { pos: [-26, 24, 24], look: [-11, 7, -6] },
+          garage: { pos: [28, 22, 26], look: [12, 2, 2] },
+        };
+        const t = targets[level];
+        if (t) {
+          this.walkMode = false;
+          this.controls.enabled = true;
+          this.camera.position.set(...t.pos);
+          this.controls.target.set(...t.look);
+          this.controls.update();
+        }
+      }
+
+      enterFreeWalk() {
+        this.stopGuidedTour();
+        this.walkMode = true;
+        this.controls.enabled = false;
+        this.exteriorGroup.visible = true;
+        Object.keys(this.floorGroups).forEach((k) => (this.floorGroups[k].visible = true));
+        this.roofCeilingsGroup.visible = true;
+        this.roofOff = false;
+        document.getElementById("btn-roof-dollhouse").classList.remove("active");
+        document.getElementById("btn-walk-mode").classList.add("active");
+        document.getElementById("btn-cam-view").style.display = "inline-flex";
+        this.playerPos.set(-12.5, 6.15, 7.8);
+        this.walkYaw = 0.25;
+        this.walkPitch = -0.14;
+        this.avatarHeading = Math.PI + 0.25;
+        this._updateWalkCamera();
+        this._syncWalkHint();
+      }
+
+      _syncWalkHint() {
+        const camBtn = document.getElementById("btn-cam-view");
+        if (camBtn) camBtn.textContent = this.thirdPerson ? "🎥 3rd-Person GTA" : "👁️ 1st-Person 16mm";
+        document.getElementById("walk-hint").innerHTML = this.thirdPerson
+          ? "<strong>GTA 3rd-Person (16mm Wide):</strong> <strong>W A S D</strong> / Arrows to walk (wall &amp; stair physics ON) • <strong>Drag</strong> to orbit • <strong>Scroll</strong> zoom"
+          : "<strong>1st-Person (16mm Wide):</strong> <strong>W A S D</strong> / Arrows to walk (wall &amp; stair physics ON) • <strong>Drag</strong> to look around";
+      }
+
+      startGuidedTour() {
+        this.walkMode = false;
+        this.controls.enabled = false;
+        if (this.avatarGroup) this.avatarGroup.visible = false;
+        document.getElementById("btn-cam-view").style.display = "none";
+        document.getElementById("btn-walk-mode").classList.remove("active");
+        this.exteriorGroup.visible = true;
+        Object.keys(this.floorGroups).forEach((k) => (this.floorGroups[k].visible = true));
+        this.tourActive = true;
+        this.tourPaused = false;
+        this.tourIdx = 0;
+        this._beginStopTransition(0);
+        document.getElementById("showcase-card").classList.add("visible");
+        document.getElementById("btn-guided-tour").classList.add("active");
+        this.music.start();
+      }
+
+      stopGuidedTour() {
+        this.tourActive = false;
+        this.controls.enabled = true;
+        this._setLensFov(54);
+        document.getElementById("showcase-card").classList.remove("visible");
+        document.getElementById("btn-guided-tour").classList.remove("active");
+      }
+
+      _beginStopTransition(idx) {
+        this.tourIdx = (idx + TOUR_STOPS.length) % TOUR_STOPS.length;
+        const stop = TOUR_STOPS[this.tourIdx];
+        // Use 16mm ultra-wide lens inside rooms and 54° for exterior/dollhouse overview
+        const isExteriorOrDollhouse = this.tourIdx === 0 || stop.roofOff;
+        this._setLensFov(isExteriorOrDollhouse ? 56 : 76);
+        this.roofCeilingsGroup.visible = !stop.roofOff;
+        this.roofOff = stop.roofOff;
+        document.getElementById("btn-roof-dollhouse").classList.toggle("active", stop.roofOff);
+        this.fromPos.copy(this.camera.position);
+        const curDir = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
+        this.fromLook.copy(this.camera.position).addScaledVector(curDir, 8);
+        this.tourPhase = "move";
+        this.tourPhaseStart = performance.now();
+        this.tourPausedAt = 0;
+
+        document.getElementById("sc-step").textContent = `Stop ${this.tourIdx + 1} of ${TOUR_STOPS.length}`;
+        document.getElementById("sc-sqft").textContent = stop.sqft;
+        document.getElementById("sc-title").textContent = stop.title;
+        document.getElementById("sc-desc").textContent = stop.desc;
+      }
+
+      _bindUI() {
+        // Welcome Overlay
+        document.getElementById("welcome-start-tour").addEventListener("click", () => {
+          document.getElementById("welcome-overlay").classList.add("hidden");
+          this.startGuidedTour();
+        });
+        document.getElementById("welcome-explore").addEventListener("click", () => {
+          document.getElementById("welcome-overlay").classList.add("hidden");
+          this.enterFreeWalk();
+        });
+
+        // Top Bar
+        document.getElementById("btn-guided-tour").addEventListener("click", () => this.startGuidedTour());
+        document.getElementById("btn-roof-dollhouse").addEventListener("click", () => {
+          this.stopGuidedTour();
+          this.setCameraDollhouse(true);
+        });
+        document.getElementById("btn-walk-mode").addEventListener("click", () => this.enterFreeWalk());
+        document.getElementById("btn-cam-view").addEventListener("click", () => {
+          this.thirdPerson = !this.thirdPerson;
+          if (this.walkMode) {
+            this._updateWalkCamera();
+            this._syncWalkHint();
+          }
+        });
+        document.getElementById("btn-music-toggle").addEventListener("click", () => this.music.toggle());
+        document.getElementById("btn-touch-toggle").addEventListener("click", (e) => {
+          const tc = document.getElementById("touch-controls");
+          const on = !tc.classList.contains("visible");
+          tc.classList.toggle("visible", on);
+          e.target.classList.toggle("active", on);
+          if (on && !this.walkMode) this.enterFreeWalk();
+        });
+        document.getElementById("btn-mobile-menu").addEventListener("click", () => {
+          document.getElementById("left-dock").classList.toggle("mobile-open");
+        });
+
+        // Auto-show touch controls on coarse-pointer mobile/tablet devices
+        if (window.matchMedia("(pointer: coarse)").matches) {
+          document.getElementById("touch-controls").classList.add("visible");
+          document.getElementById("btn-touch-toggle").classList.add("active");
+        }
+
+        // Styles
+        document.querySelectorAll("#style-switcher .choice-btn").forEach((b) => {
+          b.addEventListener("click", () => this.applyStyle(b.dataset.style));
+        });
+
+        // Time of Day
+        const todSlider = document.getElementById("tod-slider");
+        todSlider.addEventListener("input", (e) => this.setTimeOfDay(e.target.value));
+        document.querySelectorAll(".tod-pill").forEach((p) => {
+          p.addEventListener("click", () => {
+            todSlider.value = p.dataset.tod;
+            this.setTimeOfDay(p.dataset.tod);
+          });
+        });
+
+        // Levels
+        document.querySelectorAll("[data-level]").forEach((b) => {
+          b.addEventListener("click", () => this.setLevel(b.dataset.level));
+        });
+
+        // Showcase Tour Controls
+        document.getElementById("sc-prev").addEventListener("click", () => this._beginStopTransition(this.tourIdx - 1));
+        document.getElementById("sc-next").addEventListener("click", () => this._beginStopTransition(this.tourIdx + 1));
+        document.getElementById("sc-pause").addEventListener("click", (e) => {
+          this.tourPaused = !this.tourPaused;
+          if (this.tourPaused) {
+            this.tourPausedAt = performance.now();
+          } else if (this.tourPausedAt) {
+            this.tourPhaseStart += performance.now() - this.tourPausedAt;
+            this.tourPausedAt = 0;
+          }
+          e.target.textContent = this.tourPaused ? "▶ Resume" : "⏸ Pause";
+        });
+        document.getElementById("sc-stop").addEventListener("click", () => this.stopGuidedTour());
+
+        // Broker Modal
+        const bm = document.getElementById("broker-modal");
+        document.getElementById("btn-contact-broker").addEventListener("click", () => bm.classList.add("open"));
+        document.getElementById("close-broker-modal").addEventListener("click", () => bm.classList.remove("open"));
+        bm.addEventListener("click", (e) => { if (e.target === bm) bm.classList.remove("open"); });
+        document.getElementById("copy-property-info").addEventListener("click", async (e) => {
+          try {
+            await navigator.clipboard.writeText(
+              "1733 Sara Ct SE, Conyers, GA 30013 (2,086 sq ft Heated/Cooled w/ In-Law Suite) — Tony Tran, Georgia Real Estate Consultant • The NXT Team - Simply Homes ATL • 678-900-8363 • tonyt.nxt@gmail.com"
+            );
+            e.target.textContent = "✓ Copied Info!";
+            setTimeout(() => (e.target.textContent = "📋 Copy Property & Contact Info"), 2200);
+          } catch {}
+        });
+
+        // Pointer Look + Scroll Follow Distance + Keyboard Walk
+        const dom = this.renderer.domElement;
+        dom.addEventListener("pointerdown", (e) => {
+          this.lastMouse = { x: e.clientX, y: e.clientY };
+          if (this.walkMode) this.isDraggingLook = true;
+        });
+        dom.addEventListener("wheel", (e) => {
+          if (this.walkMode && this.thirdPerson) {
+            this.followDist = Math.max(2.0, Math.min(10.0, this.followDist + e.deltaY * 0.004));
+          }
+        }, { passive: true });
+        window.addEventListener("pointermove", (e) => {
+          if (this.walkMode && this.isDraggingLook) {
+            const dx = e.clientX - this.lastMouse.x;
+            const dy = e.clientY - this.lastMouse.y;
+            this.walkYaw -= dx * 0.0045;
+            this.walkPitch = Math.max(-0.85, Math.min(0.65, this.walkPitch - dy * 0.0042));
+            this.lastMouse = { x: e.clientX, y: e.clientY };
+          }
+        });
+        window.addEventListener("pointerup", () => (this.isDraggingLook = false));
+        window.addEventListener("keydown", (e) => (this.walkKeys[e.code] = true));
+        window.addEventListener("keyup", (e) => (this.walkKeys[e.code] = false));
+
+        // Mobile Virtual Joysticks
+        this._bindTouchJoysticks();
+
+        window.addEventListener("resize", () => {
+          this.camera.aspect = window.innerWidth / window.innerHeight;
+          this.camera.updateProjectionMatrix();
+          this.renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+      }
+
+      _bindTouchJoysticks() {
+        const movePad = document.getElementById("touch-move-pad");
+        const moveKnob = document.getElementById("touch-move-knob");
+        let movePid = null;
+        movePad.addEventListener("pointerdown", (e) => {
+          movePid = e.pointerId;
+          movePad.setPointerCapture(movePid);
+        });
+        movePad.addEventListener("pointermove", (e) => {
+          if (e.pointerId !== movePid) return;
+          const rect = movePad.getBoundingClientRect();
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2;
+          const maxR = rect.width * 0.34;
+          const dx = Math.max(-maxR, Math.min(maxR, e.clientX - cx));
+          const dy = Math.max(-maxR, Math.min(maxR, e.clientY - cy));
+          moveKnob.style.transform = `translate(${dx}px, ${dy}px)`;
+          this.touchMoveVec = { x: dx / maxR, y: -dy / maxR };
+        });
+        const endMove = (e) => {
+          if (e.pointerId === movePid) {
+            movePid = null;
+            moveKnob.style.transform = "translate(0,0)";
+            this.touchMoveVec = { x: 0, y: 0 };
+          }
+        };
+        movePad.addEventListener("pointerup", endMove);
+        movePad.addEventListener("pointercancel", endMove);
+
+        const lookPad = document.getElementById("touch-look-pad");
+        const lookKnob = document.getElementById("touch-look-knob");
+        let lookPid = null, lastLX = 0, lastLY = 0;
+        lookPad.addEventListener("pointerdown", (e) => {
+          lookPid = e.pointerId;
+          lastLX = e.clientX; lastLY = e.clientY;
+          lookPad.setPointerCapture(lookPid);
+        });
+        lookPad.addEventListener("pointermove", (e) => {
+          if (e.pointerId !== lookPid) return;
+          const dx = e.clientX - lastLX;
+          const dy = e.clientY - lastLY;
+          lastLX = e.clientX; lastLY = e.clientY;
+          this.walkYaw -= dx * 0.006;
+          this.walkPitch = Math.max(-0.85, Math.min(0.65, this.walkPitch - dy * 0.005));
+          const rect = lookPad.getBoundingClientRect();
+          const ox = Math.max(-28, Math.min(28, e.clientX - (rect.left + rect.width / 2)));
+          const oy = Math.max(-28, Math.min(28, e.clientY - (rect.top + rect.height / 2)));
+          lookKnob.style.transform = `translate(${ox}px, ${oy}px)`;
+        });
+        const endLook = (e) => {
+          if (e.pointerId === lookPid) {
+            lookPid = null;
+            lookKnob.style.transform = "translate(0,0)";
+          }
+        };
+        lookPad.addEventListener("pointerup", endLook);
+        lookPad.addEventListener("pointercancel", endLook);
+      }
+
+      _animate() {
+        requestAnimationFrame(() => this._animate());
+        const dt = Math.min(this.clock.getDelta(), 0.08);
+        this.fans.forEach((f) => (f.rotation.y += dt * 1.6));
+
+        if (this.tourActive) {
+          if (!this.tourPaused) {
+            const stop = TOUR_STOPS[this.tourIdx];
+            const elapsed = (performance.now() - this.tourPhaseStart) / 1000;
+            if (this.tourPhase === "move") {
+              const u = Math.min(1, elapsed / 2.6);
+              const ease = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+              const tgtPos = new THREE.Vector3(...stop.pos);
+              const tgtLook = new THREE.Vector3(...stop.look);
+              this.camera.position.lerpVectors(this.fromPos, tgtPos, ease);
+              const curLook = new THREE.Vector3().lerpVectors(this.fromLook, tgtLook, ease);
+              this.camera.lookAt(curLook);
+              if (u >= 1) {
+                this.tourPhase = "pause";
+                this.tourPhaseStart = performance.now();
+              }
+            } else {
+              if (elapsed >= 3.6) {
+                if (this.tourIdx >= TOUR_STOPS.length - 1) {
+                  // End cleanly on full Dollhouse orbit view
+                  this.tourActive = false;
+                  this.controls.enabled = true;
+                  this.controls.target.set(2, 6, 0);
+                  this.controls.update();
+                  document.getElementById("btn-guided-tour").classList.remove("active");
+                  document.getElementById("btn-roof-dollhouse").classList.add("active");
+                } else {
+                  this._beginStopTransition(this.tourIdx + 1);
+                }
+              }
+            }
+          }
+        } else if (this.walkMode) {
+          const speed = 10.5 * dt;
+          const fwdX = -Math.sin(this.walkYaw);
+          const fwdZ = -Math.cos(this.walkYaw);
+          const rightX = Math.cos(this.walkYaw);
+          const rightZ = -Math.sin(this.walkYaw);
+
+          let moveFwd = 0;
+          let moveRight = 0;
+          if (this.walkKeys["KeyW"] || this.walkKeys["ArrowUp"]) moveFwd += 1;
+          if (this.walkKeys["KeyS"] || this.walkKeys["ArrowDown"]) moveFwd -= 1;
+          if (this.walkKeys["KeyA"] || this.walkKeys["ArrowLeft"]) moveRight -= 1;
+          if (this.walkKeys["KeyD"] || this.walkKeys["ArrowRight"]) moveRight += 1;
+          if (Math.abs(this.touchMoveVec.y) > 0.08) moveFwd += this.touchMoveVec.y;
+          if (Math.abs(this.touchMoveVec.x) > 0.08) moveRight += this.touchMoveVec.x;
+
+          let mx = fwdX * moveFwd + rightX * moveRight;
+          let mz = fwdZ * moveFwd + rightZ * moveRight;
+          const mag = Math.hypot(mx, mz);
+
+          if (mag > 0.01) {
+            mx = (mx / Math.max(1, mag)) * speed;
+            mz = (mz / Math.max(1, mag)) * speed;
+            this._movePlayerWithPhysics(mx, mz, dt);
+
+            // Smooth avatar turn & leg/arm walk cycle
+            const targetH = Math.atan2(mx, mz);
+            let diff = targetH - this.avatarHeading;
+            while (diff > Math.PI) diff -= Math.PI * 2;
+            while (diff < -Math.PI) diff += Math.PI * 2;
+            this.avatarHeading += diff * Math.min(1, dt * 12);
+
+            this.walkCycle += dt * 10.5;
+            const swing = Math.sin(this.walkCycle) * 0.52;
+            if (this.legL) {
+              this.legL.rotation.x = swing;
+              this.legR.rotation.x = -swing;
+              this.armL.rotation.x = -swing * 0.7;
+              this.armR.rotation.x = swing * 0.7;
+            }
+          } else if (this.legL) {
+            this.legL.rotation.x *= 0.82;
+            this.legR.rotation.x *= 0.82;
+            this.armL.rotation.x *= 0.82;
+            this.armR.rotation.x *= 0.82;
+          }
+
+          this._updateWalkCamera();
+        } else {
+          this.controls.update();
+        }
+
+        this.renderer.render(this.scene, this.camera);
+      }
+    }
+
+    new BuyerTourApp();
+  </script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>1733 Sara Ct SE, Conyers — 3D Rehab Command Center (Andrew &amp; Kabe)</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230ea5e9'/%3E%3Ctext x='16' y='22' font-family='sans-serif' font-size='15' font-weight='bold' text-anchor='middle' fill='white'%3E3D%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-badge">3D</div>
+      <div>
+        <div class="brand-title">1733 Sara Ct SE, Conyers, GA 30013</div>
+        <div class="brand-sub">2,833 sq ft Total • 2,086 sq ft Living • 4 Levels • Clients: Andrew &amp; Kabe</div>
+      </div>
+    </div>
+
+    <nav class="mode-tabs" role="tablist">
+      <button class="mode-tab active" data-mode="dollhouse">🏠 Dollhouse</button>
+      <button class="mode-tab" data-mode="walkthrough">🚶 Walk</button>
+      <button class="mode-tab" data-mode="magicplan">🌐 Magicplan 360°</button>
+      <button class="mode-tab" data-mode="maps">🗺️ Maps</button>
+    </nav>
+
+    <div class="top-actions">
+      <!-- Prominent Before vs. After Rehab 3D Toggle -->
+      <div class="rehab-state-toggle" id="rehab-state-toggle" title="Toggle 3D House between As-Is condition and After-Rehab plan">
+        <button class="state-btn active" data-rehab-state="asis">🔧 As-Is</button>
+        <button class="state-btn" data-rehab-state="after">✨ After Rehab</button>
+      </div>
+      <a href="andrew-kabe-rehab-report.html" class="btn btn-report btn-sm" target="_blank" rel="noopener" title="Open Seller Rehab Report &amp; PDF for Andrew &amp; Kabe">📋 Seller Report</a>
+      <a href="3D-buyer-tour-1733-Sara-Ct-Conyers.html" class="btn btn-tour btn-sm" target="_blank" rel="noopener" title="Launch 6-Step Furnished 3D Buyer Tour (beta)">🏡 Buyer Tour (beta)</a>
+      <button id="btn-export-copy" class="btn btn-primary btn-sm">📋 Copy</button>
+      <button id="btn-export-md" class="btn btn-sm">⬇ .md</button>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="workspace">
+    <section class="viewport-wrap">
+      <!-- Three.js 3D Canvas -->
+      <div id="canvas-container"></div>
+
+      <!-- Floating First-Person Room Teleporter Bar -->
+      <div class="fp-teleport-bar" id="fp-teleport-bar">
+        <span class="fp-label">🚶 Eye-Level Room Teleporter:</span>
+        <div class="fp-spots" id="fp-spots-bar"></div>
+      </div>
+
+      <!-- Left Floating HUD (3D Controls) -->
+      <aside class="left-hud" id="left-hud">
+        <div class="hud-card">
+          <div class="hud-title">
+            <span>Levels &amp; Exterior</span>
+            <button id="btn-show-all" class="solo-btn">Show All</button>
+          </div>
+          <div class="floor-list">
+            <div class="floor-row">
+              <label><input type="checkbox" id="toggle-exterior" checked /> <span class="dot" style="background:#1e3a5f"></span> Exterior Shell &amp; Roof</label>
+            </div>
+            <div class="floor-row">
+              <label><input type="checkbox" class="floor-toggle" data-floor="upstairs" checked /> <span class="dot" style="background:#38bdf8"></span> Upstairs (771 sf)</label>
+              <button class="solo-btn" data-solo="upstairs">Solo</button>
+            </div>
+            <div class="floor-row">
+              <label><input type="checkbox" class="floor-toggle" data-floor="main" checked /> <span class="dot" style="background:#34d399"></span> Main &amp; Deck (808 sf)</label>
+              <button class="solo-btn" data-solo="main">Solo</button>
+            </div>
+            <div class="floor-row">
+              <label><input type="checkbox" class="floor-toggle" data-floor="garage" checked /> <span class="dot" style="background:#fbbf24"></span> In-Law / Garage (705 sf)</label>
+              <button class="solo-btn" data-solo="garage">Solo</button>
+            </div>
+            <div class="floor-row">
+              <label><input type="checkbox" class="floor-toggle" data-floor="crawl" checked /> <span class="dot" style="background:#a78bfa"></span> Crawl Space (468 sf)</label>
+              <button class="solo-btn" data-solo="crawl">Solo</button>
+            </div>
+          </div>
+
+          <div class="slider-row">
+            <label><span>Exploded Floor Stack</span><span id="explode-val">0%</span></label>
+            <input type="range" id="explode-slider" min="0" max="100" value="0" />
+          </div>
+          <div class="slider-row">
+            <label><span>Wall Cutaway Height</span><span id="wall-val">68%</span></label>
+            <input type="range" id="wall-slider" min="15" max="100" value="68" />
+          </div>
+        </div>
+
+        <div class="hud-card">
+          <div class="hud-title"><span>🚶 Teleport Inside Room (5.5')</span></div>
+          <select id="teleport-select" class="hud-select"></select>
+          <div class="camera-grid" style="margin-top:7px;">
+            <button class="btn btn-sm" data-cam="dollhouse">Dollhouse</button>
+            <button class="btn btn-sm" data-cam="front">Front Curb</button>
+            <button class="btn btn-sm" data-cam="rear">Rear Deck</button>
+            <button class="btn btn-sm" data-cam="top">Top Plan</button>
+          </div>
+        </div>
+
+        <div class="hud-card">
+          <div class="hud-title"><span>3D Pin Legend</span></div>
+          <div class="legend">
+            <div class="legend-item"><span class="dot" style="background:#f87171"></span> Must-Do / Safety Rehab Pin</div>
+            <div class="legend-item"><span class="dot" style="background:#fbbf24"></span> Value-Add / Cosmetic Pin</div>
+            <div class="legend-item"><span class="dot" style="background:#38bdf8"></span> 360° Magicplan Camera Spot</div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Bottom Status / Instructions Banner -->
+      <div class="bottom-banner" id="bottom-banner">
+        <strong>Dollhouse Controls:</strong> Left-drag to orbit • Right-drag to pan • Scroll to zoom • Use <strong>🔧 As-Is / ✨ After Rehab</strong> in the top bar to preview Andrew &amp; Kabe's renovation in 3D!
+      </div>
+
+      <!-- Overlay 1: Magicplan Cloud 2D / 3D / 360° / Photos Launchpad -->
+      <div class="overlay-view" id="overlay-magicplan">
+        <div class="overlay-toolbar">
+          <div>
+            <strong>🌐 Magicplan Cloud — 1733 Sara Ct SE (Live Client Share)</strong>
+            <span style="color:var(--muted); margin-left:8px;">Magicplan blocks in-page iframes, so every button below jumps directly into that exact floor &amp; mode.</span>
+          </div>
+          <a id="mp-all-photos-link" class="btn btn-primary btn-sm" target="_blank" rel="noopener">🖼️ Open All Property Photos</a>
+        </div>
+        <div class="mp-grid" id="mp-launchpad-grid"></div>
+      </div>
+
+      <!-- Overlay 2: Live Aerial Satellite + Google Street View / Earth -->
+      <div class="overlay-view" id="overlay-maps">
+        <div class="overlay-toolbar">
+          <div>
+            <strong>1733 Sara Ct SE, Conyers, GA 30013</strong>
+            <span style="color:var(--muted); margin-left:8px;">33.6440541, -84.0060406</span>
+          </div>
+          <div class="pill-group">
+            <button id="btn-map-sat" class="pill active">🛰️ Aerial Satellite</button>
+            <button id="btn-map-street" class="pill">🗺️ Street Map</button>
+            <a id="link-streetview" class="btn btn-primary btn-sm" target="_blank" rel="noopener">🚗 Open Google Street View</a>
+            <a id="link-earth" class="btn btn-primary btn-sm" target="_blank" rel="noopener">🌍 Open Google Earth 3D</a>
+            <a id="link-gmaps" class="btn btn-sm" target="_blank" rel="noopener">📍 Open Google Maps</a>
+          </div>
+        </div>
+        <div id="leaflet-map" style="flex:1; width:100%; background:#020617;"></div>
+      </div>
+    </section>
+
+    <!-- Right Sidebar: Inspector & Rehab Scope Estimator -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong style="font-size:14px;">🛠️ Rehab Scope &amp; Budget Estimator</strong>
+          <button id="btn-reset-rehab" class="btn btn-sm" title="Reset estimates to default">Reset</button>
+        </div>
+
+        <div class="budget-box">
+          <div>
+            <div class="budget-label">Estimated Rehab Range (<span id="included-count">10</span> items)</div>
+            <div class="budget-range" id="total-budget">$0 – $0</div>
+          </div>
+        </div>
+
+        <div class="alert-strip">
+          <strong>⚠️ GLA &amp; In-Law Suite Strategy:</strong> Pair <strong>Half-House Central HVAC</strong> (Main + Upstairs) with a <strong>Ductless Mini-Split + Open Kitchenette + Front-Left Bedroom Closet</strong> in the 705 sf Garage Conversion so all <strong>2,086 sq ft</strong> qualify for heated/cooled value. Verify <strong>Public Sewer vs. Septic</strong>, breaker capacity &amp; GFCI outlets pre-listing.
+        </div>
+      </div>
+
+      <div class="sidebar-body" id="sidebar-body">
+        <!-- Selected Room / 360° Inspector -->
+        <div class="selected-room-card" id="selected-room-card">
+          <h4>Click any room or pin in 3D</h4>
+          <p>Select a room to see exact Magicplan dimensions, rehab notes, and jump straight into that floor's 360° panorama.</p>
+        </div>
+
+        <!-- Rehab Cards Rendered Dynamically -->
+        <div id="rehab-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+      </div>
+
+      <div class="sidebar-footer">
+        <button id="btn-add-item" class="btn btn-sm" style="flex:1; justify-content:center;">+ Add Custom Rehab Item</button>
+      </div>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast">Copied to clipboard!</div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
