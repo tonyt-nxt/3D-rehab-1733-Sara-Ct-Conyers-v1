@@ -1,5 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { MAGICPLAN_FLOORS, ROOMS, PANO_PINS, TELEPORT_SPOTS } from "./property-data.js";
 
 export class PropertyScene3D {
@@ -12,6 +14,7 @@ export class PropertyScene3D {
     this.roomMeshes = [];
     this.pinMeshes = [];
     this.ceilingFans = [];
+    this.blenderSlots = [];
     this.exteriorGroup = new THREE.Group();
 
     // Rehab Before vs. After state & dynamic swap registries
@@ -47,6 +50,7 @@ export class PropertyScene3D {
     this._buildInteriorFixtures();
     this._buildExteriorShell();
     this._build360Pins();
+    this._loadBlenderFixtures();
     this._bindEvents();
     this.setRehabPreviewMode(false);
     this.setCameraPreset("dollhouse");
@@ -67,9 +71,14 @@ export class PropertyScene3D {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.08;
+    this.renderer.toneMappingExposure = 1.05;
     this.container.appendChild(this.renderer.domElement);
+
+    const pmrem = new THREE.PMREMGenerator(this.renderer);
+    this.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    pmrem.dispose();
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
@@ -393,6 +402,76 @@ export class PropertyScene3D {
     });
     this.frameMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.38 });
     this.doorWoodMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.45 });
+
+    // Upgrade core surfaces asynchronously with real Poly Haven CC0 1K PBR map sets (diff, nor, rough)
+    const tl = new THREE.TextureLoader();
+    const loadPbr = (prefix, rx, ry, mats, norScale = 0.55) => {
+      const cfg = (url, isColor) => {
+        const tx = tl.load(url, () => {
+          mats.forEach((m) => { m.needsUpdate = true; });
+        });
+        tx.wrapS = THREE.RepeatWrapping;
+        tx.wrapT = THREE.RepeatWrapping;
+        tx.repeat.set(rx, ry);
+        tx.anisotropy = 8;
+        if (isColor) tx.colorSpace = THREE.SRGBColorSpace;
+        return tx;
+      };
+      const diff = cfg(`assets/textures/${prefix}_diff.jpg`, true);
+      const nor = cfg(`assets/textures/${prefix}_nor.jpg`, false);
+      const rough = cfg(`assets/textures/${prefix}_rough.jpg`, false);
+      mats.forEach((m) => {
+        m.map = diff;
+        m.normalMap = nor;
+        m.normalScale = new THREE.Vector2(norScale, norScale);
+        m.roughnessMap = rough;
+        m.needsUpdate = true;
+      });
+    };
+
+    loadPbr("lvp_oak", 4, 4, [this.floorMats.lvpOak], 0.55);
+    this.floorMats.lvpOak.roughness = 0.78;
+
+    loadPbr("tile_ceramic", 5, 5, [this.floorMats.tileClean, this.cleanCeramicMat], 0.50);
+    this.floorMats.tileClean.roughness = 0.55;
+    this.cleanCeramicMat.roughness = 0.45;
+
+    loadPbr("deck_oak", 4, 4, [this.floorMats.deckStained], 0.65);
+    this.floorMats.deckStained.color.setHex(0xc88d65);
+    this.floorMats.deckStained.roughness = 0.85;
+
+    loadPbr("granite_counter", 3, 3, [this.graniteMat], 0.40);
+    this.graniteMat.roughness = 0.35;
+
+    this.pbrTex = {
+      stoneDiff: (() => {
+        const tx = tl.load("assets/textures/stone_stacked_diff.jpg");
+        tx.wrapS = THREE.RepeatWrapping; tx.wrapT = THREE.RepeatWrapping; tx.repeat.set(6, 3);
+        tx.anisotropy = 8; tx.colorSpace = THREE.SRGBColorSpace;
+        return tx;
+      })(),
+      stoneNor: (() => {
+        const tx = tl.load("assets/textures/stone_stacked_nor.jpg");
+        tx.wrapS = THREE.RepeatWrapping; tx.wrapT = THREE.RepeatWrapping; tx.repeat.set(6, 3);
+        return tx;
+      })(),
+      stoneRough: (() => {
+        const tx = tl.load("assets/textures/stone_stacked_rough.jpg");
+        tx.wrapS = THREE.RepeatWrapping; tx.wrapT = THREE.RepeatWrapping; tx.repeat.set(6, 3);
+        return tx;
+      })(),
+      roofDiff: (() => {
+        const tx = tl.load("assets/textures/roof_slates_diff.jpg");
+        tx.wrapS = THREE.RepeatWrapping; tx.wrapT = THREE.RepeatWrapping; tx.repeat.set(0.28, 0.28);
+        tx.anisotropy = 8; tx.colorSpace = THREE.SRGBColorSpace;
+        return tx;
+      })(),
+      roofNor: (() => {
+        const tx = tl.load("assets/textures/roof_slates_nor.jpg");
+        tx.wrapS = THREE.RepeatWrapping; tx.wrapT = THREE.RepeatWrapping; tx.repeat.set(0.28, 0.28);
+        return tx;
+      })(),
+    };
   }
 
   _buildLot() {
@@ -852,8 +931,62 @@ export class PropertyScene3D {
     }
   }
 
+  _registerGlbSlot(parent, prefab, pos, rotY = 0, scale = [1, 1, 1], fallback = null, isFan = false) {
+    const slot = new THREE.Group();
+    slot.position.set(pos[0], pos[1], pos[2]);
+    slot.rotation.y = rotY;
+    slot.scale.set(scale[0], scale[1], scale[2]);
+    parent.add(slot);
+    this.blenderSlots.push({ slot, prefab, fallback, isFan });
+    return slot;
+  }
+
+  _loadBlenderFixtures() {
+    const loader = new GLTFLoader();
+    loader.load(
+      "assets/models/rehab_fixtures.glb?v=2",
+      (gltf) => {
+        this.blenderSlots.forEach(({ slot, prefab, fallback, isFan }) => {
+          const src = gltf.scene.getObjectByName(prefab);
+          if (!src) return;
+          const clone = src.clone(true);
+          clone.position.set(0, 0, 0);
+          clone.rotation.set(0, 0, 0);
+          clone.scale.set(1, 1, 1);
+          clone.traverse((ch) => {
+            if (ch.isMesh) {
+              ch.castShadow = true;
+              ch.receiveShadow = true;
+              const mat = ch.material;
+              if (mat && mat.name && (mat.name.includes("ShowerGlass") || mat.name.includes("Glass"))) {
+                if (mat.name.includes("ShowerGlass")) {
+                  mat.transparent = true;
+                  mat.opacity = 0.32;
+                  mat.depthWrite = false;
+                  mat.side = THREE.DoubleSide;
+                }
+              }
+            }
+          });
+          slot.add(clone);
+          if (fallback) {
+            fallback.visible = false;
+            if (fallback.parent) fallback.parent.remove(fallback);
+          }
+          if (isFan) {
+            this.ceilingFans.push(clone);
+          }
+        });
+        this.setRehabPreviewMode(this.isAfterRehab);
+      },
+      undefined,
+      (err) => console.warn("GLB fixtures load skipped:", err)
+    );
+  }
+
   // === Detailed Room-by-Room Interior Fixtures & As-Is vs. After Rehab Visuals ===
   _buildInteriorFixtures() {
+    const addSlot = (...args) => this._registerGlbSlot(...args);
     const porcelainMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.2 });
     const stainedPorcelainMat = new THREE.MeshStandardMaterial({ color: 0xd6cfc2, roughness: 0.45 });
     const chromeMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.85, roughness: 0.15 });
@@ -871,6 +1004,7 @@ export class PropertyScene3D {
       // --- KITCHEN (Same Layout) ---
       // As-Is: dated gray-taupe flat cabinets, dark worn counters, shallow double-bowl sink
       const kitchenAsIsGrp = new THREE.Group();
+      const kAsIsFb = new THREE.Group();
       const oldCabMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.7 });
       const oldTopMat = new THREE.MeshStandardMaterial({ color: 0x57534e, roughness: 0.65 });
       const oldNorthBase = new THREE.Mesh(new THREE.BoxGeometry(7.2, 3.0, 2.1), oldCabMat);
@@ -887,12 +1021,16 @@ export class PropertyScene3D {
       oldEastTop.position.set(-1.25, 3.4, -8.5);
       const oldUpperCab = new THREE.Mesh(new THREE.BoxGeometry(1.3, 2.2, 6.2), oldCabMat);
       oldUpperCab.position.set(-0.85, 6.2, -7.2);
-      kitchenAsIsGrp.add(oldNorthBase, oldNorthTop, oldDoubleSink, oldSinkDivider, oldEastBase, oldEastTop, oldUpperCab);
+      kAsIsFb.add(oldNorthBase, oldNorthTop, oldDoubleSink, oldSinkDivider, oldEastBase, oldEastTop);
+      kitchenAsIsGrp.add(kAsIsFb, oldUpperCab);
+      addSlot(kitchenAsIsGrp, "Kitchen_North_AsIs", [-6.5, 0.35, -9.85], 0, [1, 1, 1], kAsIsFb);
+      addSlot(kitchenAsIsGrp, "Kitchen_East_AsIs", [-1.25, 0.35, -8.5], -Math.PI / 2, [1, 1, 1], null);
       mainGrp.add(kitchenAsIsGrp);
       this.asIsOnlyObjects.push(kitchenAsIsGrp);
 
       // After-Rehab Kitchen: Brand-New White Shaker Cabinets, Granite Countertops, 1 Large Single-Bowl Deep Sink, GFCI, New SS Fridge
       const kitchenAfterGrp = new THREE.Group();
+      const kAfterFb = new THREE.Group();
       const shakerMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.35 });
       const shakerTrimMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.4 });
       const newNorthBase = new THREE.Mesh(new THREE.BoxGeometry(7.2, 3.0, 2.1), shakerMat);
@@ -903,7 +1041,7 @@ export class PropertyScene3D {
       for (let sx = -9.5; sx <= -3.5; sx += 1.5) {
         const doorFrame = new THREE.Mesh(new THREE.BoxGeometry(1.3, 2.2, 0.08), shakerTrimMat);
         doorFrame.position.set(sx, 1.8, -8.78);
-        kitchenAfterGrp.add(doorFrame);
+        kAfterFb.add(doorFrame);
       }
 
       // 1 Large Single-Bowl Deep-Dish Sink + Modern Gooseneck Faucet
@@ -937,14 +1075,20 @@ export class PropertyScene3D {
       const fridgeSeam = new THREE.Mesh(new THREE.BoxGeometry(0.06, 5.8, 0.08), darkMat);
       fridgeSeam.position.set(-2.8, 3.3, -2.2);
 
-      kitchenAfterGrp.add(
+      kAfterFb.add(
         newNorthBase, newNorthTop, deepSinkOuter, deepSinkVoid, gooseneckPost, gooseneckArc,
-        newEastBase, newEastTop, newUpperCab, gfci1, gfci2, fridge, fridgeSeam
+        newEastBase, newEastTop, newUpperCab, fridge, fridgeSeam
       );
+      kitchenAfterGrp.add(kAfterFb, gfci1, gfci2);
+      addSlot(kitchenAfterGrp, "Kitchen_North_After", [-6.5, 0.35, -9.85], 0, [1, 1, 1], kAfterFb);
+      addSlot(kitchenAfterGrp, "Kitchen_East_After", [-1.25, 0.35, -8.5], -Math.PI / 2, [1, 1, 1], null);
+      addSlot(kitchenAfterGrp, "Kitchen_Upper_After", [-0.85, 5.05, -7.2], -Math.PI / 2, [1, 1, 1], null);
+      addSlot(kitchenAfterGrp, "Fridge_FrenchDoor", [-1.45, 0.35, -2.2], -Math.PI / 2, [1, 1, 1], null);
       mainGrp.add(kitchenAfterGrp);
       this.afterRehabOnlyObjects.push(kitchenAfterGrp);
 
       // Salvaged Existing Matching Stainless Steel Electric Range + Over-Range Microwave (Both As-Is & After Rehab!)
+      const rangeMicroFb = new THREE.Group();
       const stove = new THREE.Mesh(new THREE.BoxGeometry(2.5, 3.1, 2.4), stainlessMat);
       stove.position.set(-1.35, 1.9, -5.2);
       const cooktop = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.08, 2.2), darkMat);
@@ -953,7 +1097,10 @@ export class PropertyScene3D {
       microwave.position.set(-0.9, 5.65, -5.2);
       const mwGlass = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.0, 1.6), darkMat);
       mwGlass.position.set(-1.62, 5.65, -5.3);
-      mainGrp.add(stove, cooktop, microwave, mwGlass);
+      rangeMicroFb.add(stove, cooktop, microwave, mwGlass);
+      mainGrp.add(rangeMicroFb);
+      addSlot(mainGrp, "Range_30in", [-1.35, 0.35, -5.2], -Math.PI / 2, [1, 1, 1], rangeMicroFb);
+      addSlot(mainGrp, "Microwave_OverRange", [-0.90, 4.92, -5.2], -Math.PI / 2, [1, 1, 1], null);
 
       // --- DINING ROOM: Dated vs. Modern Light Fixture ---
       const oldDiningLight = new THREE.Group();
@@ -966,21 +1113,24 @@ export class PropertyScene3D {
       this.asIsOnlyObjects.push(oldDiningLight);
 
       const modernDiningLight = new THREE.Group();
+      const modernDiningFb = new THREE.Group();
       const modBar = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.12, 0.2), darkMat);
       modBar.position.set(-16.0, 6.5, -5.5);
       const modDrop1 = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.4, 8), darkMat);
       modDrop1.position.set(-17.0, 7.25, -5.5);
       const modDrop2 = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.4, 8), darkMat);
       modDrop2.position.set(-15.0, 7.25, -5.5);
-      modernDiningLight.add(modBar, modDrop1, modDrop2);
+      modernDiningFb.add(modBar, modDrop1, modDrop2);
       [-17.4, -16.0, -14.6].forEach((gx) => {
         const bulb = new THREE.Mesh(
           new THREE.SphereGeometry(0.24, 12, 10),
           new THREE.MeshStandardMaterial({ color: 0xfffbeb, emissive: 0xfde68a, emissiveIntensity: 0.65 })
         );
         bulb.position.set(gx, 6.32, -5.5);
-        modernDiningLight.add(bulb);
+        modernDiningFb.add(bulb);
       });
+      modernDiningLight.add(modernDiningFb);
+      addSlot(modernDiningLight, "Chandelier_Linear_Modern", [-16.0, 7.98, -5.5], Math.PI / 2, [1, 1, 1], modernDiningFb);
       mainGrp.add(modernDiningLight);
       this.afterRehabOnlyObjects.push(modernDiningLight);
 
@@ -989,6 +1139,7 @@ export class PropertyScene3D {
       livingFan.position.set(-11.0, 7.6, 5.8);
       mainGrp.add(livingFan);
       this.ceilingFans.push(livingFan);
+      addSlot(mainGrp, "Ceiling_Fan_Modern", [-11.0, 8.0, 5.8], 0, [1, 1, 1], livingFan, true);
 
       // As-Is Window Curtain Rods & Draperies (Deleted in After Rehab!)
       const curtainsAsIs = new THREE.Group();
@@ -1021,6 +1172,7 @@ export class PropertyScene3D {
       const washer = new THREE.Mesh(new THREE.BoxGeometry(2.3, 3.2, 2.3), porcelainMat);
       washer.position.set(-2.0, 1.95, 10.2);
       mainGrp.add(washer);
+      addSlot(mainGrp, "Washer_FrontLoad", [-2.0, 0.35, 10.2], Math.PI, [1, 1, 1], washer);
 
       const laundryAsIs = new THREE.Group();
       const studMat = new THREE.MeshStandardMaterial({ color: 0xb48a5a, roughness: 0.85 });
@@ -1059,6 +1211,7 @@ export class PropertyScene3D {
       priFan.position.set(16.4, 7.7, -3.5);
       upGrp.add(priFan);
       this.ceilingFans.push(priFan);
+      addSlot(upGrp, "Ceiling_Fan_Modern", [16.4, 8.1, -3.5], 0, [1, 1, 1], priFan, true);
 
       const openClosetAsIs = new THREE.Group();
       for (let s = 1; s <= 5; s++) {
@@ -1104,6 +1257,8 @@ export class PropertyScene3D {
       upGrp.add(matchingFansAfter);
       this.afterRehabOnlyObjects.push(matchingFansAfter);
       this.ceilingFans.push(oldFan2, oldFan3, modFan2, modFan3);
+      addSlot(matchingFansAfter, "Ceiling_Fan_Modern", [6.0, 8.1, 11.0], 0, [1, 1, 1], modFan2, true);
+      addSlot(matchingFansAfter, "Ceiling_Fan_Modern", [18.5, 8.1, 9.8], 0, [1, 1, 1], modFan3, true);
 
       // --- PRIMARY BATHROOM ---
       // Salvaged Toilet (against south wall facing -Z cleanly beside double vanity)
@@ -1111,15 +1266,18 @@ export class PropertyScene3D {
       priToilet.rotation.y = Math.PI;
       priToilet.position.set(1.5, 0.35, -2.55);
       upGrp.add(priToilet);
+      addSlot(upGrp, "Toilet_Detailed", [1.5, 0.35, -2.90], Math.PI, [1, 1, 1], priToilet);
 
       // Salvaged 6-Drawer Double Vanity (Nicks & missing top-left pull in As-Is -> Touched-up + all 6 pulls + Mirror + GFCI in After Rehab!)
       const vanityWoodMat = new THREE.MeshStandardMaterial({ color: 0x5c4738, roughness: 0.68 });
       this.trimTouchupMats.push({ mat: vanityWoodMat, asIsHex: 0x5c4738, afterHex: 0x4b382a });
+      const priVanityBaseFb = new THREE.Group();
       const priVanity = new THREE.Mesh(new THREE.BoxGeometry(5.0, 2.8, 1.8), vanityWoodMat);
       priVanity.position.set(5.1, 1.75, -2.75);
       const priTop = new THREE.Mesh(new THREE.BoxGeometry(5.1, 0.16, 1.9), porcelainMat);
       priTop.position.set(5.1, 3.2, -2.75);
-      upGrp.add(priVanity, priTop);
+      priVanityBaseFb.add(priVanity, priTop);
+      upGrp.add(priVanityBaseFb);
 
       // 6 Drawer fronts (3 left, 3 right — top-left handle MISSING in As-Is!)
       const pullPositions = [
@@ -1140,19 +1298,23 @@ export class PropertyScene3D {
         afterHardware.add(newPull);
       });
       // Large mirror + GFCI outlet added in After Rehab
+      const priMirrorFb = new THREE.Group();
       const priMirrorFrame = new THREE.Mesh(new THREE.BoxGeometry(4.8, 3.2, 0.12), darkMat);
-      priMirrorFrame.position.set(5.1, 5.2, -1.9);
+      priMirrorFrame.position.set(5.1, 5.2, -2.14);
       const priMirrorGlass = new THREE.Mesh(
         new THREE.BoxGeometry(4.5, 2.9, 0.14),
         new THREE.MeshStandardMaterial({ color: 0xe0f2fe, metalness: 0.9, roughness: 0.08 })
       );
-      priMirrorGlass.position.set(5.1, 5.2, -1.92);
+      priMirrorGlass.position.set(5.1, 5.2, -2.16);
+      priMirrorFb.add(afterHardware, priMirrorFrame, priMirrorGlass);
       const priGfci = this._makeGfciOutlet();
-      priGfci.position.set(7.8, 4.0, -1.9);
-      missingPullAfter.add(afterHardware, priMirrorFrame, priMirrorGlass, priGfci);
+      priGfci.position.set(7.8, 4.0, -2.12);
+      missingPullAfter.add(priMirrorFb, priGfci);
       upGrp.add(asIsHardware, missingPullAfter);
       this.asIsOnlyObjects.push(asIsHardware);
       this.afterRehabOnlyObjects.push(missingPullAfter);
+      addSlot(asIsHardware, "Vanity_Double_AsIs", [5.1, 0.35, -3.02], Math.PI, [1, 1, 1], priVanityBaseFb);
+      addSlot(missingPullAfter, "Vanity_Double_After", [5.1, 0.35, -3.02], Math.PI, [1, 1, 1], priMirrorFb);
 
       // Primary Shower: As-Is (Compact w/ Pebble Floor & Curtain Rod) -> After Rehab (Extended toward intact right window w/ Ceramic Tile & Swinging Glass Enclosure!)
       const priShowerAsIs = new THREE.Group();
@@ -1171,6 +1333,7 @@ export class PropertyScene3D {
       this.asIsOnlyObjects.push(priShowerAsIs);
 
       const priShowerAfter = new THREE.Group();
+      const priShowerFb = new THREE.Group();
       // Extended shower ends at X = 5.7 (left edge of right-shifted North window X = 5.9..7.7)
       const extCeramicFloor = new THREE.Mesh(new THREE.BoxGeometry(5.3, 0.28, 3.9), this.cleanCeramicMat);
       extCeramicFloor.position.set(3.05, 0.48, -8.15);
@@ -1184,7 +1347,9 @@ export class PropertyScene3D {
       swingDoor.rotation.y = 0.52;
       const sideGlass = new THREE.Mesh(new THREE.BoxGeometry(0.08, 6.8, 3.8), this.showerGlassMat);
       sideGlass.position.set(5.7, 4.1, -8.15);
-      priShowerAfter.add(extCeramicFloor, extCurb, fixedGlass, swingDoor, sideGlass);
+      priShowerFb.add(extCeramicFloor, extCurb, fixedGlass, swingDoor, sideGlass);
+      priShowerAfter.add(priShowerFb);
+      addSlot(priShowerAfter, "Shower_Extended_After", [3.05, 0.35, -8.15], 0, [1, 1, 1], priShowerFb);
       upGrp.add(priShowerAfter);
       this.afterRehabOnlyObjects.push(priShowerAfter);
 
@@ -1200,6 +1365,7 @@ export class PropertyScene3D {
       const hallToilet = this._makeToilet(stainedPorcelainMat);
       hallToilet.position.set(4.2, 0.35, -0.7);
       upGrp.add(hallToilet);
+      addSlot(upGrp, "Toilet_Detailed", [4.2, 0.35, -0.7], 0, [1, 1, 1], hallToilet);
 
       // As-Is Exposed Plumbing Pipes on wall where vanity was removed
       const exposedPlumbingGrp = new THREE.Group();
@@ -1217,6 +1383,7 @@ export class PropertyScene3D {
 
       // After Rehab: New Vanity + GFCI + Glass Sliding Shower Door
       const hallAfterGrp = new THREE.Group();
+      const hallVanityFb = new THREE.Group();
       const vBox = new THREE.Mesh(new THREE.BoxGeometry(2.8, 2.8, 1.7), this.frameMat);
       vBox.position.set(6.4, 1.75, -0.7);
       const vTop = new THREE.Mesh(new THREE.BoxGeometry(2.9, 0.16, 1.8), porcelainMat);
@@ -1225,6 +1392,7 @@ export class PropertyScene3D {
       vFaucet.position.set(6.4, 3.55, -1.3);
       const hallMirror = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.8, 0.1), darkMat);
       hallMirror.position.set(6.4, 5.1, -1.55);
+      hallVanityFb.add(vBox, vTop, vFaucet, hallMirror);
       const hallGfci = this._makeGfciOutlet();
       hallGfci.position.set(7.9, 4.0, -1.5);
       // Glass Sliding Shower Door
@@ -1234,7 +1402,8 @@ export class PropertyScene3D {
       sliderGlass1.position.set(2.86, 3.85, -0.25);
       const sliderGlass2 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 6.7, 2.35), this.showerGlassMat);
       sliderGlass2.position.set(2.94, 3.85, 1.85);
-      hallAfterGrp.add(vBox, vTop, vFaucet, hallMirror, hallGfci, sliderTrackTop, sliderGlass1, sliderGlass2);
+      hallAfterGrp.add(hallVanityFb, hallGfci, sliderTrackTop, sliderGlass1, sliderGlass2);
+      addSlot(hallAfterGrp, "Vanity_Single_After", [6.4, 0.35, -0.75], 0, [1, 1, 1], hallVanityFb);
       upGrp.add(hallAfterGrp);
       this.afterRehabOnlyObjects.push(hallAfterGrp);
     }
@@ -1267,6 +1436,7 @@ export class PropertyScene3D {
       garFan.position.set(16.5, 7.6, -1.0);
       garGrp.add(garFan);
       this.ceilingFans.push(garFan);
+      addSlot(garGrp, "Ceiling_Fan_Modern", [16.5, 8.0, -1.0], 0, [1, 1, 1], garFan, true);
 
       // 5 Recessed Ceiling Lights (visible wafer trims floating at ceiling line)
       const recessedCoords = [
@@ -1324,6 +1494,7 @@ export class PropertyScene3D {
 
       // After Rehab: Wall-Mounted Ductless Heat-Pump Mini-Split Indoor Head (East wall, x=24.0, y=6.8, z=-1.5)
       const miniSplitIndoor = new THREE.Group();
+      const msFb = new THREE.Group();
       const msBody = new THREE.Mesh(new THREE.BoxGeometry(0.75, 1.05, 3.4), porcelainMat);
       msBody.position.set(23.85, 6.8, -1.5);
       const msVane = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.18, 3.0), darkMat);
@@ -1333,7 +1504,9 @@ export class PropertyScene3D {
         new THREE.MeshStandardMaterial({ color: 0x34d399, emissive: 0x34d399, emissiveIntensity: 1.0 })
       );
       msLed.position.set(23.44, 6.8, -0.4);
-      miniSplitIndoor.add(msBody, msVane, msLed);
+      msFb.add(msBody, msVane, msLed);
+      miniSplitIndoor.add(msFb);
+      addSlot(miniSplitIndoor, "MiniSplit_Indoor_Head", [24.25, 6.25, -1.5], -Math.PI / 2, [1, 1, 1], msFb);
       garGrp.add(miniSplitIndoor);
       this.afterRehabOnlyObjects.push(miniSplitIndoor);
 
@@ -1341,6 +1514,7 @@ export class PropertyScene3D {
       const gToilet = this._makeToilet(porcelainMat);
       gToilet.position.set(5.4, 0.35, -9.0);
       garGrp.add(gToilet);
+      addSlot(garGrp, "Toilet_Detailed", [5.4, 0.35, -9.1], 0, [1, 1, 1], gToilet);
 
       const gShowerPan = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.3, 4.7), this.pebbleMat);
       gShowerPan.position.set(1.9, 0.5, -7.8);
@@ -1364,6 +1538,7 @@ export class PropertyScene3D {
 
       // After Rehab: Boxed-in Plumbing Chase, Glass Shower Enclosure, New Vanity + GFCI
       const gBathAfter = new THREE.Group();
+      const gVanityFb = new THREE.Group();
       const chase = new THREE.Mesh(new THREE.BoxGeometry(2.5, 7.6, 0.85), this.frameMat);
       chase.position.set(5.35, 4.1, -9.75);
       const gGlassDoor = new THREE.Mesh(new THREE.BoxGeometry(0.08, 6.8, 4.6), this.showerGlassMat);
@@ -1376,9 +1551,11 @@ export class PropertyScene3D {
       gVanityTop.position.set(9.0, 3.2, -9.3);
       const gMirror = new THREE.Mesh(new THREE.BoxGeometry(2.1, 2.6, 0.1), darkMat);
       gMirror.position.set(9.0, 5.1, -10.05);
+      gVanityFb.add(gVanity, gVanityTop, gMirror);
       const gGfci = this._makeGfciOutlet();
       gGfci.position.set(10.1, 4.0, -10.0);
-      gBathAfter.add(chase, gGlassDoor, gGlassFrame, gVanity, gVanityTop, gMirror, gGfci);
+      gBathAfter.add(chase, gGlassDoor, gGlassFrame, gVanityFb, gGfci);
+      addSlot(gBathAfter, "Vanity_Single_After", [9.0, 0.35, -9.25], 0, [0.9, 1.0, 0.9], gVanityFb);
       garGrp.add(gBathAfter);
       this.afterRehabOnlyObjects.push(gBathAfter);
 
@@ -1398,6 +1575,7 @@ export class PropertyScene3D {
 
       // --- FRONT-RIGHT ROOM -> OPEN IN-LAW KITCHENETTE (After Rehab!) ---
       const kitchenetteAfter = new THREE.Group();
+      const k2Fb = new THREE.Group();
       const kCab = new THREE.Mesh(new THREE.BoxGeometry(2.1, 3.0, 6.6), this.frameMat);
       kCab.position.set(23.1, 1.85, 11.4);
       const kTop = new THREE.Mesh(new THREE.BoxGeometry(2.25, 0.2, 6.75), this.graniteMat);
@@ -1416,7 +1594,10 @@ export class PropertyScene3D {
       const kGfci = this._makeGfciOutlet();
       kGfci.rotation.y = -Math.PI / 2;
       kGfci.position.set(24.05, 4.2, 12.7);
-      kitchenetteAfter.add(kCab, kTop, kUpper, kSink, kFaucet, kAppliance, kFridge, kGfci);
+      k2Fb.add(kCab, kTop, kSink, kFaucet, kAppliance, kFridge);
+      kitchenetteAfter.add(k2Fb, kUpper, kGfci);
+      addSlot(kitchenetteAfter, "InLaw_Kitchenette_After", [23.05, 0.35, 11.4], -Math.PI / 2, [1, 1, 1], k2Fb);
+      addSlot(kitchenetteAfter, "Fridge_FrenchDoor", [22.9, 0.35, 6.9], -Math.PI / 2, [0.92, 0.92, 0.86], null);
       garGrp.add(kitchenetteAfter);
       this.afterRehabOnlyObjects.push(kitchenetteAfter);
     }
@@ -1576,16 +1757,21 @@ export class PropertyScene3D {
       opacity: 0.85,
     });
     this.exteriorStoneMat = new THREE.MeshStandardMaterial({
-      map: this.tex.stoneAsIs,
-      roughness: 0.92,
+      map: this.pbrTex.stoneDiff || this.tex.stoneAsIs,
+      normalMap: this.pbrTex.stoneNor,
+      normalScale: new THREE.Vector2(0.7, 0.7),
+      roughnessMap: this.pbrTex.stoneRough,
+      roughness: 0.9,
       transparent: true,
-      opacity: 0.92,
+      opacity: 0.94,
     });
     const roofMat = new THREE.MeshStandardMaterial({
-      map: this.tex.roofTex,
+      map: this.pbrTex.roofDiff || this.tex.roofTex,
+      normalMap: this.pbrTex.roofNor,
+      normalScale: new THREE.Vector2(0.65, 0.65),
       roughness: 0.85,
       transparent: true,
-      opacity: 0.9,
+      opacity: 0.92,
     });
 
     // Exterior fascia/corner trim targeted for blue touch-up paint in After Rehab
@@ -1872,7 +2058,8 @@ export class PropertyScene3D {
     }
 
     if (this.exteriorStoneMat) {
-      this.exteriorStoneMat.map = this.isAfterRehab ? this.tex.stoneAfter : this.tex.stoneAsIs;
+      this.exteriorStoneMat.map = this.pbrTex.stoneDiff || (this.isAfterRehab ? this.tex.stoneAfter : this.tex.stoneAsIs);
+      this.exteriorStoneMat.color.setHex(this.isAfterRehab ? 0xffffff : 0xdfd8cf);
       this.exteriorStoneMat.needsUpdate = true;
     }
   }
