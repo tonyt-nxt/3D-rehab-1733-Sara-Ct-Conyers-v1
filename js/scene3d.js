@@ -1622,6 +1622,60 @@ export class PropertyScene3D {
     frontWinGlass.position.set(-13.4, 10.3, 12.38);
     this.exteriorGroup.add(frontWinGlass);
 
+    // Closed Exterior Doors (visible only when Exterior Shell & Roof is checked)
+    const extDoorPanelMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.45, metalness: 0.1 });
+    const extWhiteDoorMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.42 });
+    const extBrassMat = new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.85, roughness: 0.25 });
+    const addClosedSingleExtDoor = (x, y, z, w, h, d, panelMat, outDir = 1, hasUpperGlass = true) => {
+      const grp = new THREE.Group();
+      const frame = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), this.frameMat);
+      const slab = new THREE.Mesh(new THREE.BoxGeometry(w - 0.35, h - 0.3, d + 0.04), panelMat);
+      slab.position.y = -0.05;
+      grp.add(frame, slab);
+      if (hasUpperGlass) {
+        const lite = new THREE.Mesh(new THREE.BoxGeometry(w * 0.58, h * 0.34, d + 0.09), this.extGlassMat);
+        lite.position.y = h * 0.19;
+        grp.add(lite);
+      }
+      const knob = new THREE.Mesh(new THREE.SphereGeometry(0.14, 10, 10), extBrassMat);
+      knob.position.set((w / 2 - 0.52) * outDir, -0.25, outDir * (d / 2 + 0.09));
+      grp.add(knob);
+      grp.position.set(x, y, z);
+      this.exteriorGroup.add(grp);
+    };
+
+    // 1. Front Main Entry Door (Left Wing Front, +Z above stone steps)
+    addClosedSingleExtDoor(-3.4, 9.3, 12.35, 3.4, 6.9, 0.45, extDoorPanelMat, 1, true);
+
+    // 3. Rear Main Floor Double French Doors at the Deck (Left Wing Back, -Z)
+    const deckFrenchGrp = new THREE.Group();
+    const dfFrame = new THREE.Mesh(new THREE.BoxGeometry(5.6, 6.9, 0.45), this.frameMat);
+    const dfStile = new THREE.Mesh(new THREE.BoxGeometry(0.24, 6.6, 0.5), this.frameMat);
+    [-1.32, 1.32].forEach((dx) => {
+      const leaf = new THREE.Mesh(new THREE.BoxGeometry(2.45, 6.5, 0.47), extWhiteDoorMat);
+      leaf.position.x = dx;
+      const glass = new THREE.Mesh(new THREE.BoxGeometry(1.85, 5.2, 0.53), this.extGlassMat);
+      glass.position.set(dx, 0.15, 0);
+      const knob = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 8), extBrassMat);
+      knob.position.set(dx > 0 ? 0.25 : -0.25, -0.25, -0.3);
+      deckFrenchGrp.add(leaf, glass, knob);
+    });
+    deckFrenchGrp.add(dfFrame, dfStile);
+    deckFrenchGrp.position.set(-16.0, 9.55, -11.45);
+    this.exteriorGroup.add(deckFrenchGrp);
+
+    // 4. Rear Crawl Space Door under the Deck (Left Wing Back, -Z)
+    const crawlWoodDoorMat = new THREE.MeshStandardMaterial({ color: 0x3f2e21, roughness: 0.85 });
+    const crawlTrimMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.7 });
+    const extCrawlGrp = new THREE.Group();
+    const crawlDoorFrame = new THREE.Mesh(new THREE.BoxGeometry(3.15, 4.6, 0.34), crawlTrimMat);
+    const crawlDoorLeaf = new THREE.Mesh(new THREE.BoxGeometry(2.85, 4.35, 0.38), crawlWoodDoorMat);
+    const crawlDoorLatch = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.32, 0.12), extBrassMat);
+    crawlDoorLatch.position.set(-1.05, -0.1, -0.24);
+    extCrawlGrp.add(crawlDoorFrame, crawlDoorLeaf, crawlDoorLatch);
+    extCrawlGrp.position.set(-6.6, 2.2, -11.45);
+    this.exteriorGroup.add(extCrawlGrp);
+
     // Right Wing (Stacked Stone Lower Front + Blue Board-and-Batten Upper)
     const rightBase = new THREE.Mesh(new THREE.BoxGeometry(25.0, 8.8, 26.8), this.exteriorSidingMat);
     rightBase.position.set(12.3, 4.4, 2.7);
@@ -1653,12 +1707,17 @@ export class PropertyScene3D {
       this.exteriorGroup.add(g);
     });
 
-    // Garage Conversion Front Exterior: Front-Left Window (#11)
+    // 2. Front In-Law / Garage Driveway Door (Right Wing Front, +Z) + Front-Left Window (#11)
+    addClosedSingleExtDoor(17.2, 3.8, 16.18, 3.3, 6.8, 0.45, extDoorPanelMat, 1, true);
+
     const lowerFrontWinF = new THREE.Mesh(new THREE.BoxGeometry(3.9, 4.0, 0.45), this.frameMat);
     lowerFrontWinF.position.set(6.9, 4.8, 16.18);
     const lowerFrontWinG = new THREE.Mesh(new THREE.BoxGeometry(3.3, 3.4, 0.52), this.extGlassMat);
     lowerFrontWinG.position.set(6.9, 4.8, 16.21);
     this.exteriorGroup.add(lowerFrontWinF, lowerFrontWinG);
+
+    // 5. Rear In-Law Suite Backyard Door (Right Wing Back, -Z)
+    addClosedSingleExtDoor(14.8, 3.8, -10.75, 3.2, 6.8, 0.42, extWhiteDoorMat, -1, true);
 
     // === Foundation Defects (Photos 14-16: Block Hole, Step Cracks, Rusted Vent) ===
     const foundationDefectsAsIs = new THREE.Group();
